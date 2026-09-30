@@ -5,6 +5,7 @@
  */
 import { ApiError, request, requestEnvelope, type PaginationMeta } from '../../shared/api/client';
 import { parseData } from '../../shared/api/envelope';
+import { appendFormFile } from '../../shared/api/formFile';
 import { positiveIntSchema } from '../../shared/lib/routeParams';
 import { INPUT_LIMITS, clampText } from '../../shared/lib/textLimits';
 import { qaConfigSchema, qaListSchema, qaSchema, type QaConfigDto, type QaDto } from './schema';
@@ -14,13 +15,6 @@ const MAX_PAGE_SIZE = 100;
 export const QA_MAX_FILES = 2;
 export const QA_CONTENT_MAX = 65_536;
 const UPLOAD_TIMEOUT_MS = 60_000;
-
-/** RN FormData 는 `{uri, name, type}` 파트를 받는다(lib.dom 에 없는 RN 전용 형태). */
-interface RNFormDataFile {
-  uri: string;
-  name: string;
-  type: string;
-}
 
 export type QaFileSlot = 1 | 2;
 
@@ -92,20 +86,17 @@ export function hasFileChanges(changes: QaFileChanges | undefined): changes is Q
 }
 
 /** multipart 본문 — `method` 를 주면 `_method` 로 PATCH 터널링. */
-export function buildQaForm(
+export async function buildQaForm(
   payload: Record<string, string | number>,
   changes: QaFileChanges,
   method?: 'PATCH',
-): FormData {
+): Promise<FormData> {
   const form = new FormData();
   if (method) form.append('_method', method);
   for (const [key, value] of Object.entries(payload)) form.append(key, String(value));
   for (const slot of [1, 2] as const) {
     const file = changes.files?.[slot];
-    if (file) {
-      const part: RNFormDataFile = { uri: file.uri, name: file.name, type: file.mimeType };
-      form.append(`bf_file[${slot}]`, part as unknown as Blob);
-    }
+    if (file) await appendFormFile(form, `bf_file[${slot}]`, { uri: file.uri, name: file.name, type: file.mimeType });
     if (changes.deleteSlots?.includes(slot)) form.append(`bf_file_del[${slot}]`, '1');
   }
   return form;
@@ -136,7 +127,7 @@ export async function createQa(body: QaWriteBody, changes?: QaFileChanges): Prom
   if (!hasFileChanges(changes)) return request('/qas', { method: 'POST', body: payload, schema: qaSchema });
   return request('/qas', {
     method: 'POST',
-    body: buildQaForm(payload, changes),
+    body: await buildQaForm(payload, changes),
     timeoutMs: UPLOAD_TIMEOUT_MS,
     schema: qaSchema,
   });
@@ -148,7 +139,7 @@ export async function updateQa(qaId: number, body: QaWriteBody, changes?: QaFile
   if (!hasFileChanges(changes)) return request(path, { method: 'PATCH', body: payload, schema: qaSchema });
   return request(path, {
     method: 'POST',
-    body: buildQaForm(payload, changes, 'PATCH'),
+    body: await buildQaForm(payload, changes, 'PATCH'),
     timeoutMs: UPLOAD_TIMEOUT_MS,
     schema: qaSchema,
   });

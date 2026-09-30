@@ -118,6 +118,36 @@ describe('fetchWithTimeout', () => {
     expect(removeSpy).toHaveBeenCalledWith('abort', expect.any(Function));
   });
 
+  // expo/fetch(SDK 57 전역 fetch)는 요청 도중 취소·타임아웃에 AbortError 가 아니라 이름이 'Error' 인 FetchError 를 던진다.
+  function mockExpoStyleAbortableFetch(): void {
+    global.fetch = jest.fn(
+      (_input: RequestInfo | URL, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(new Error('fetch failed: Canceled')));
+        }),
+    ) as typeof fetch;
+  }
+
+  test('expo/fetch-style rejections on timeout still become a "sent" timeout', async () => {
+    mockExpoStyleAbortableFetch();
+    const promise = fetchWithTimeout('https://api.example.test/slow', {}, 1000);
+    jest.advanceTimersByTime(1000);
+    const error = await promise.catch((e: unknown) => e);
+    expect(isTimeoutError(error)).toBe(true);
+    expect(classifyFetchFailure(error)).toEqual({ kind: 'timeout', phase: 'sent' });
+  });
+
+  test('expo/fetch-style rejections on an upstream cancel become an "aborted" AbortError', async () => {
+    mockExpoStyleAbortableFetch();
+    const upstream = new AbortController();
+    const promise = fetchWithTimeout('https://api.example.test/slow', { signal: upstream.signal }, 1000);
+    upstream.abort();
+    const error = await promise.catch((e: unknown) => e);
+    expect(isAbortError(error)).toBe(true);
+    expect(isTimeoutError(error)).toBe(false);
+    expect(classifyFetchFailure(error)).toEqual({ kind: 'aborted', phase: 'sent' });
+  });
+
   test('leaves fetch options untouched when timeout is disabled', async () => {
     const response = { ok: true, status: 200 } as Response;
     const init: RequestInit = { headers: { Accept: 'application/json' } };

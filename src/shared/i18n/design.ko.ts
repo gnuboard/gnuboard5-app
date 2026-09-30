@@ -22,4 +22,9 @@ export const designKo: Record<string, string> = {
   'web.app_only_body': '결제·본인인증·주소 찾기는 웹 데모에서 지원하지 않아요. 앱을 설치해 이용해 주세요.',
   'web.checkout_blocked': '웹 데모에서는 결제할 수 없어요. 앱을 설치해 주문해 주세요.',
   'settings.app_version': '앱 버전',
+  'board.attach_source_title': '무엇을 첨부할까요?',
+  'board.attach_source_photo': '사진',
+  'board.attach_source_file': '파일 (문서·압축)',
+  'board.file_type_not_allowed_title': '올릴 수 없는 파일 형식이에요',
+  'board.file_type_not_allowed_message': '올릴 수 있는 형식: {exts}',
 };

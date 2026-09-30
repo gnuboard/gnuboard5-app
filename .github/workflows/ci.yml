@@ -1,15 +1,14 @@
 # CI (PLAN T-P0-04) — 호스팅 러너에서 실행 가능한 검사만 담는다.
-# 2026-09-22: GitHub Actions 가 계정 결제 보류로 시작되지 않아 자동 트리거(push/pull_request)를 끄고 수동(workflow_dispatch)만 남긴다.
-# 같은 검사는 로컬에서 매 작업마다 실행한다(npm run typecheck/lint/format:check, npx jest --coverage, npx expo-doctor,
-# node scripts/check-store-readiness.js). 결제가 풀리면 아래 트리거를 복원한다.
+# 2026-09-30: 공개 시험 저장소(개인 계정)에서만 push·PR 마다 돈다(공개 저장소는 Actions 무료).
+# 정식 저장소(gnuboard 조직)와 비공개 개발 저장소에서는 job 이 건너뛰어진다(아래 `if`) — 회사 저장소에 CI 알림이 가지 않게.
 # dev API(localhost/LAN)에 붙는 계약 테스트·fixture 검사는 셀프호스티드 러너 또는 scripts/contract-nightly.ps1 (T-P0-14).
 name: ci
 
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
-  # push:
-  #   branches: [main]
-  # pull_request:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -22,6 +21,7 @@ permissions:
 jobs:
   check:
     name: typecheck · lint · test · doctor · store-readiness
+    if: github.repository_owner != 'gnuboard' && !github.event.repository.private
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:

@@ -23,4 +23,9 @@ export const designEn: Record<string, string> = {
     'Payments, identity verification and address search are not available in the web demo. Please install the app.',
   'web.checkout_blocked': 'You cannot pay in the web demo. Please install the app to order.',
   'settings.app_version': 'App version',
+  'board.attach_source_title': 'What would you like to attach?',
+  'board.attach_source_photo': 'Photo',
+  'board.attach_source_file': 'File (documents, archives)',
+  'board.file_type_not_allowed_title': 'This file type is not allowed',
+  'board.file_type_not_allowed_message': 'Allowed types: {exts}',
 };

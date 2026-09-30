@@ -44,6 +44,7 @@ export const LIBRARY_LICENSES: readonly LicenseEntry[] = [
   { name: 'expo', license: 'MIT' },
   { name: 'expo-apple-authentication', license: 'MIT' },
   { name: 'expo-application', license: 'MIT' },
+  { name: 'expo-document-picker', license: 'MIT' },
   { name: 'expo-asset', license: 'MIT' },
   { name: 'expo-audio', license: 'MIT' },
   { name: 'expo-constants', license: 'MIT' },
@@ -74,5 +75,6 @@ export const LIBRARY_LICENSES: readonly LicenseEntry[] = [
   { name: 'react-native-webview', license: 'MIT' },
   { name: 'react-native-worklets', license: 'MIT' },
   { name: 'xss', license: 'MIT' },
+  { name: 'whatwg-fetch', license: 'MIT' },
   { name: 'zod', license: 'MIT' },
 ];

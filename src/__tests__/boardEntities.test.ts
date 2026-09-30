@@ -395,7 +395,7 @@ describe('post files', () => {
     const seen = capture('post', '/boards/free/2166/files', { success: true, data: [file(0), file(1)] });
     expect(await syncPostFiles('free', 2166, attachmentsFromFiles(original), original)).toEqual(original);
     expect(seen).toHaveLength(0);
-    const form = buildFileSyncForm(planFileSync([{ kind: 'existing', bf_no: 0 }]));
+    const form = await buildFileSyncForm(planFileSync([{ kind: 'existing', bf_no: 0 }]));
     expect(typeof form.append).toBe('function');
     const result = await syncPostFiles('free', 2166, [{ kind: 'existing', bf_no: 0 }], []);
     expect(result).toHaveLength(2);

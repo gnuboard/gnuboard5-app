@@ -231,8 +231,8 @@ describe('qa api', () => {
     expect(requireQaId('12')).toBe(12);
   });
 
-  test('buildQaForm places files in bf_file[n], tunnels PATCH and marks deleted slots', () => {
-    const form = buildQaForm(
+  test('buildQaForm places files in bf_file[n], tunnels PATCH and marks deleted slots', async () => {
+    const form = await buildQaForm(
       { qa_subject: 's', qa_content: 'c' },
       { files: { 2: { uri: 'file:///b.jpg', name: 'b.jpg', mimeType: 'image/jpeg' } }, deleteSlots: [1] },
       'PATCH',

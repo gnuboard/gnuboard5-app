@@ -222,7 +222,7 @@ function usePostDetailController(props: Omit<ContentProps, 'onBack'>) {
   const commentsLimit = props.commentId ? undefined : COMMENT_PAGE_SIZE;
   const detail = usePostDetail({ boTable, wrId, secretHint, commentsLimit });
   const more = useMoreComments(boTable, wrId, detail.post);
-  const board = useBoardQuery(boTable);
+  const board = useBoardQuery(boTable, { fresh: true });
   const member = useAuth().state.member;
   const tree = useMemo(
     () => buildCommentTree(more.comments.filter(detail.isVisibleAuthor)),

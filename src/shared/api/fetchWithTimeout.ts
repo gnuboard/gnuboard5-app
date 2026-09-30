@@ -6,6 +6,8 @@
  * RN fetch(XHR) 는 네트워크 오류의 원인을 노출하지 않으므로 이 구분은 "즉시 throw = unsent, 타임아웃 = sent" 휴리스틱이다.
  * 전송 중 끊긴 드문 경우가 unsent 로 분류될 수 있음을 refresh 정책(SC-16 grace) 이 감안한다.
  */
+import { uploadFetch } from './uploadFetch';
+
 export const DEFAULT_REQUEST_TIMEOUT_MS = 15_000;
 
 export type FetchFailurePhase = 'sent' | 'unsent';
@@ -35,6 +37,14 @@ export function isAbortError(error: unknown): boolean {
   return !!error && typeof error === 'object' && 'name' in error && (error as { name?: unknown }).name === 'AbortError';
 }
 
+/** 호출자 취소로 끝난 요청의 오류를 AbortError 로 맞춘다(원래 오류는 cause 로 남긴다). */
+function asAbortError(error: unknown): Error {
+  if (isAbortError(error) && error instanceof Error) return error;
+  const abort = new Error('Request aborted', { cause: error });
+  abort.name = 'AbortError';
+  return abort;
+}
+
 export function isTimeoutError(error: unknown): error is FetchTimeoutError {
   return isAbortError(error) && (error as { timedOut?: unknown }).timedOut === true;
 }
@@ -45,12 +55,18 @@ export function classifyFetchFailure(error: unknown): FetchFailure {
   return { kind: 'network', phase: 'unsent' };
 }
 
+/** 파일 업로드(FormData)는 RN XHR(uploadFetch)로, 그 밖은 전역 fetch(expo/fetch)로 — uploadFetch.native.ts 참고. */
+function transportFor(init: RequestInit): typeof fetch {
+  return typeof FormData !== 'undefined' && init.body instanceof FormData ? uploadFetch : fetch;
+}
+
 export async function fetchWithTimeout(
   input: RequestInfo | URL,
   init: RequestInit = {},
   timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
 ): Promise<Response> {
-  if (timeoutMs <= 0) return fetch(input, init);
+  const send = transportFor(init);
+  if (timeoutMs <= 0) return send(input, init);
 
   const controller = new AbortController();
   const upstreamSignal = init.signal;
@@ -69,9 +85,12 @@ export async function fetchWithTimeout(
     controller.abort();
   }, timeoutMs);
   try {
-    return await fetch(input, { ...init, signal: controller.signal });
+    return await send(input, { ...init, signal: controller.signal });
   } catch (error: unknown) {
-    if (timedOut && isAbortError(error)) throw new FetchTimeoutError(timeoutMs);
+    // 오류 이름이 아니라 우리가 건 타이머·신호로 판단한다 — expo/fetch 는 요청 도중 취소를 AbortError 가 아닌
+    // FetchError(name 'Error')로 던져서, 이름으로 보면 타임아웃·취소가 모두 '안 보낸 네트워크 실패'로 잘못 분류된다.
+    if (timedOut) throw new FetchTimeoutError(timeoutMs);
+    if (controller.signal.aborted) throw asAbortError(error);
     throw error;
   } finally {
     clearTimeout(timer);

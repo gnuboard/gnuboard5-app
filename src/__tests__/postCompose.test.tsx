@@ -295,6 +295,48 @@ describe('AttachmentList', () => {
     await waitFor(() => expect(alertSpy).toHaveBeenCalledWith('파일이 너무 커요', expect.stringContaining('0.0MB')));
     expect(onChange).toHaveBeenCalledTimes(1);
   });
+
+  test('documents and archives keep their name and type; unsupported types are refused', async () => {
+    const onChange = jest.fn();
+    const pick = jest.fn(async () => ({
+      uri: 'file:///cache/doc.pdf',
+      fileName: '계약서 초안.pdf',
+      fileSize: 10,
+      mimeType: 'application/pdf',
+    }));
+    await render(
+      wrap(
+        <AttachmentList
+          attachments={[]}
+          originalFiles={[]}
+          maxCount={2}
+          maxSize={1024}
+          disabled={false}
+          onChange={onChange}
+          pick={pick}
+        />,
+      ),
+    );
+    await fireEvent.press(screen.getByTestId('compose-attachment-add'));
+    await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
+    const update = onChange.mock.calls[0][0] as (prev: unknown[]) => unknown[];
+    expect(update([])).toEqual([
+      expect.objectContaining({ kind: 'new', name: '계약서 초안.pdf', mimeType: 'application/pdf' }),
+    ]);
+
+    pick.mockResolvedValueOnce({ uri: 'file:///cache/zip', fileName: '자료.zip', fileSize: 10, mimeType: '' });
+    await fireEvent.press(screen.getByTestId('compose-attachment-add'));
+    await waitFor(() => expect(onChange).toHaveBeenCalledTimes(2));
+    const zipUpdate = onChange.mock.calls[1][0] as (prev: unknown[]) => unknown[];
+    expect(zipUpdate([])).toEqual([expect.objectContaining({ name: '자료.zip', mimeType: 'application/zip' })]);
+
+    pick.mockResolvedValueOnce({ uri: 'file:///cache/x', fileName: 'setup.exe', fileSize: 10, mimeType: '' });
+    await fireEvent.press(screen.getByTestId('compose-attachment-add'));
+    await waitFor(() =>
+      expect(alertSpy).toHaveBeenCalledWith('올릴 수 없는 파일 형식이에요', expect.stringContaining('zip')),
+    );
+    expect(onChange).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe('PostComposeScreen', () => {

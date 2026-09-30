@@ -1,25 +1,26 @@
 /**
- * 첨부 파일 목록 (T-P1B-06, ARCH §8.7). 기존 파일(bf_no)·새 파일(로컬 URI)을 한 줄씩, 삭제 가능. 추가는 갤러리 Photo
- * Picker(이미지) — 문서 선택은 expo-document-picker 도입 전까지 미지원. 한도는 보드 `bo_upload_count/size`.
+ * 첨부 파일 목록 (T-P1B-06, ARCH §8.7). 기존 파일(bf_no)·새 파일(로컬 URI)을 한 줄씩, 삭제 가능. 추가는 사진(Photo
+ * Picker) 또는 파일(문서·압축, expo-document-picker) — pickAttachment.ts. 한도는 보드 `bo_upload_count/size`,
+ * 형식은 서버와 같은 허용 목록(entities/postFile/attachmentRules).
  */
 import React from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import {
+  ATTACHMENT_EXTENSIONS,
+  inferAttachmentMimeType,
+  isAllowedAttachment,
+} from '../../../entities/postFile/attachmentRules';
 import type { Attachment, NewAttachment } from '../../../entities/postFile/model';
 import type { PostFileDto } from '../../../entities/postFile/schema';
 import { safeUploadFileName } from '../../../entities/upload/api';
 import { t } from '../../../shared/i18n';
-import { pickSingleImageFromLibrary } from '../../../shared/lib/imagePicker';
-import { inferImageUploadMimeType } from '../../../shared/lib/imageUpload';
 import { AppText } from '../../../shared/ui/AppText';
 import { Button } from '../../../shared/ui/Button';
 import { useTheme } from '../../../shared/ui/theme/ThemeProvider';
 import { RADII, SPACE } from '../../../shared/ui/tokens/primitive';
+import { pickAttachment, type PickedFile } from './pickAttachment';
 
-export interface PickedFile {
-  uri: string;
-  fileName?: string | null;
-  fileSize?: number | null;
-}
+export type { PickedFile } from './pickAttachment';
 
 export interface AttachmentListProps {
   attachments: Attachment[];
@@ -33,12 +34,13 @@ export interface AttachmentListProps {
   pick?: () => Promise<PickedFile | null>;
 }
 
-const defaultPick = (): Promise<PickedFile | null> =>
-  pickSingleImageFromLibrary({ mediaTypes: ['images'], quality: 1, allowsEditing: false });
+function attachmentName(picked: PickedFile): string {
+  return safeUploadFileName(picked.fileName) ?? `photo-${Date.now()}.jpg`;
+}
 
 export function toNewAttachment(picked: PickedFile): NewAttachment {
-  const name = safeUploadFileName(picked.fileName) ?? `photo-${Date.now()}.jpg`;
-  const mimeType = inferImageUploadMimeType(picked.uri, name);
+  const name = attachmentName(picked);
+  const mimeType = inferAttachmentMimeType(name, picked.mimeType);
   const localId = `local-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   return { kind: 'new', localId, uri: picked.uri, name, mimeType };
 }
@@ -88,10 +90,17 @@ function AttachmentRow({ item, label, disabled, onRemove }: RowProps) {
 }
 
 export function AttachmentList(props: AttachmentListProps) {
-  const { attachments, originalFiles, maxCount, maxSize, disabled, onChange, pick = defaultPick } = props;
+  const { attachments, originalFiles, maxCount, maxSize, disabled, onChange, pick = pickAttachment } = props;
   const add = async () => {
     const picked = await pick();
     if (!picked) return;
+    if (!isAllowedAttachment(attachmentName(picked))) {
+      Alert.alert(
+        t('board.file_type_not_allowed_title'),
+        t('board.file_type_not_allowed_message', { exts: ATTACHMENT_EXTENSIONS.join(', ') }),
+      );
+      return;
+    }
     if (!fitsUploadSize(picked, maxSize)) {
       const mb = (maxSize / 1024 / 1024).toFixed(1);
       Alert.alert(t('board.file_too_large_title'), t('board.file_too_large_message', { mb }));

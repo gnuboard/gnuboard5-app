@@ -108,7 +108,7 @@ export function usePostDetail({ boTable, wrId, secretHint, commentsLimit }: UseP
   const navigation = useNavigation<PostDetailNavigation>();
   const member = useAuth().state.member;
   const memberId = member?.mb_id;
-  const board = useBoardQuery(boTable);
+  const board = useBoardQuery(boTable, { fresh: true });
   const query = usePostQuery(boTable, wrId, true, commentsLimit);
   const deleteMutation = useDeletePostMutation(boTable, wrId);
   const isVisible = useBlockedAuthorFilter();

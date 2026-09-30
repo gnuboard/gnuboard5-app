@@ -97,7 +97,7 @@ function CommentEditContent({ params, goBack, onSaved, onLogin }: ContentProps) 
   // SC-12: 상세 캐시가 앞 50건뿐이면(comments_meta) 51번째 뒤 댓글은 전량 조회로 찾는다.
   const inDetail = post.data?.comments.find((item) => item.wr_id === params.comment_id);
   const full = usePostFullQuery(params.board, params.wr_id, !!post.data?.comments_meta && !inDetail);
-  const board = useBoardQuery(params.board);
+  const board = useBoardQuery(params.board, { fresh: true });
   const update = useUpdateCommentMutation(params.board, params.wr_id);
   const comment = inDetail ?? full.data?.comments.find((item) => item.wr_id === params.comment_id);
   const editable = !!post.data && !!comment && canManageComment(post.data, comment, member?.mb_id);

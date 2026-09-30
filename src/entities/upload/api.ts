@@ -8,6 +8,7 @@
  */
 import { API_BASE, ApiError, api, getToken, refreshAccessTokenForRequest } from '../../shared/api/client';
 import { fetchWithTimeout } from '../../shared/api/fetchWithTimeout';
+import { appendFormFile } from '../../shared/api/formFile';
 import { normalizeEditorUploadImageUrl } from '../../shared/html/editorImages';
 import {
   inferImageUploadMimeType,
@@ -28,16 +29,6 @@ export interface UploadedImage {
  * @param uri  로컬 file:// 또는 data: URI
  * @param name 옵션. 기본은 'image.jpg'
  */
-/**
- * React Native 의 FormData 는 표준 web Blob 외에 { uri, name, type } 형태도 허용.
- * lib.dom.d.ts 에는 없는 RN-only 형태라 별도 타입으로 선언해 any 우회를 제거.
- */
-interface RNFormDataFile {
-  uri: string;
-  name: string;
-  type: string;
-}
-
 const MAX_LOCAL_UPLOAD_URI_LENGTH = 4096;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -113,10 +104,9 @@ export function safeUploadFileName(value: unknown): string | null {
   return sanitized || null;
 }
 
-function buildUploadFormData(uri: string, name: string, type: ImageUploadMimeType): FormData {
+async function buildUploadFormData(uri: string, name: string, type: ImageUploadMimeType): Promise<FormData> {
   const formData = new FormData();
-  const filePart: RNFormDataFile = { uri, name, type };
-  formData.append('file', filePart as unknown as Blob);
+  await appendFormFile(formData, 'file', { uri, name, type });
   return formData;
 }
 
@@ -132,7 +122,7 @@ async function uploadImageOnce(
   return fetchWithTimeout(`${API_BASE}/upload`, {
     method: 'POST',
     headers,
-    body: buildUploadFormData(uri, name, type),
+    body: await buildUploadFormData(uri, name, type),
   });
 }
 

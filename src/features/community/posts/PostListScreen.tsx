@@ -91,7 +91,7 @@ interface ContentProps {
 function usePostListScreen(boTable: string, refreshKey: number | undefined, initial: InitialSearch) {
   const qc = useQueryClient();
   const member = useAuth().state.member;
-  const board = useBoardQuery(boTable);
+  const board = useBoardQuery(boTable, { fresh: true });
   const [controls, setControls] = useState<PostListControls>(() =>
     initial.query
       ? { ...INITIAL_CONTROLS, query: initial.query, field: initial.field ?? INITIAL_CONTROLS.field, searchOpen: true }

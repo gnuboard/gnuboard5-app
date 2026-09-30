@@ -15,6 +15,7 @@ executionOrder:
   flowsOrder:
     - auth-login-logout
     - community-write
+    - community-attach
     - guest-cart
     - guest-order-bank
     - account-delete

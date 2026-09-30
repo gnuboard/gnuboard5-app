@@ -1,0 +1,88 @@
+# 첨부 업로드(2026-09-30): 글쓰기 → 파일 추가 → 저장 → 상세의 첨부 목록에 파일명이 그대로 보인다.
+# E2E 빌드(EXPO_PUBLIC_E2E=1)는 시스템 선택기 대신 한글 이름 텍스트 파일("E2E 첨부 파일.txt")을 돌려준다(compose/pickAttachment.ts).
+# 이 흐름이 없어서 Expo SDK 57 전역 fetch 가 첨부 파트를 거부하던 문제("Unsupported FormDataPart implementation")를 놓쳤다.
+# env: E2E_USER, E2E_PASSWORD, E2E_BOARD(기본 free — 첨부 허용 게시판)
+appId: kr.sirsoft.gnuboard5
+tags:
+  - p1b
+  - community
+env:
+  E2E_BOARD: ${E2E_BOARD || 'free'}
+---
+- evalScript: ${output.postSubject = 'E2E attach ' + Date.now()}
+
+- runFlow: ../subflows/launch-fresh.yaml
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      USERNAME: ${E2E_USER}
+      PASSWORD: ${E2E_PASSWORD}
+
+- repeat:
+    while:
+      notVisible:
+        id: 'boards-list'
+    times: 5
+    commands:
+      - tapOn:
+          id: 'tab-HomeTab'
+      - waitForAnimationToEnd:
+          timeout: 3000
+      - tapOn:
+          id: 'tab-CommunityTab'
+      - tapOn:
+          id: 'menu-all-boards'
+      - waitForAnimationToEnd:
+          timeout: 3000
+- scrollUntilVisible:
+    element:
+      id: 'board-row-${E2E_BOARD}'
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: 'board-row-${E2E_BOARD}'
+- extendedWaitUntil:
+    visible:
+      id: 'post-compose-button'
+    timeout: 20000
+- tapOn:
+    id: 'post-compose-button'
+# 앞선 흐름이 남긴 초안이 있으면 버린다.
+- tapOn:
+    text: '버리기'
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: 'compose-subject'
+    timeout: 20000
+- tapOn:
+    id: 'compose-subject'
+- inputText: ${output.postSubject}
+- tapOn:
+    id: 'compose-content'
+- inputText: 'Maestro attachment body'
+- scrollUntilVisible:
+    element:
+      id: 'compose-attachment-add'
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: 'compose-attachment-add'
+- extendedWaitUntil:
+    visible:
+      text: 'E2E 첨부 파일.txt'
+    timeout: 10000
+- tapOn:
+    id: 'compose-submit'
+# 저장 성공(글 + 첨부) → PostDetail 로 replace. 첨부 저장이 실패하면 상세로 가지 않고 경고가 뜬다.
+- extendedWaitUntil:
+    visible:
+      id: 'post-detail-screen'
+    timeout: 60000
+- scrollUntilVisible:
+    element:
+      id: 'post-attachments'
+    direction: DOWN
+    timeout: 20000
+- assertVisible:
+    text: '.*E2E 첨부 파일\.txt.*'
