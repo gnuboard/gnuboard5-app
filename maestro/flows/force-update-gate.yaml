@@ -1,0 +1,40 @@
+# T-P1A-09 (PLAN §2.2 종료 기준 3, §7.4): 강제 업데이트 게이트.
+# 기본 스위트에서는 제외(config.yaml excludeTags). 덮어쓰기 값을 넣은 셸에서 개발 빌드를 다시 만들고(Metro 도 같은 셸) 이 흐름만 실행한다:
+#   PowerShell: $env:EXPO_PUBLIC_E2E_SETTINGS_OVERRIDE='{"app_min_version":"999.0.0"}'; npx expo run:android
+#   maestro test maestro/flows/force-update-gate.yaml
+# 끝나면 변수를 지우고(Remove-Item Env:EXPO_PUBLIC_E2E_SETTINGS_OVERRIDE) 다시 빌드해야 나머지 흐름이 통과한다.
+# (서버 쪽 대안: scripts/e2e-set-min-version.ps1 — 아직 없음, README 참고)
+# 게이트는 앱 트리 전체를 가리므로 온보딩·탭이 보이면 안 된다.
+appId: kr.sirsoft.gnuboard5
+tags:
+  - p1a
+  - force-update
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+    permissions:
+      notifications: allow
+- extendedWaitUntil:
+    visible:
+      text: '업데이트 필요'
+    timeout: 30000
+- assertVisible:
+    text: '업데이트하기'
+- assertNotVisible:
+    id: 'tab-HomeTab'
+- assertNotVisible:
+    id: 'onboarding-skip'
+# 뒤로 가기로 닫히지 않는다(dismiss 불가)
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - back
+      - launchApp:
+          permissions:
+            notifications: allow
+      - extendedWaitUntil:
+          visible:
+            text: '업데이트 필요'
+          timeout: 30000

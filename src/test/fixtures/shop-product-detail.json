@@ -1,0 +1,173 @@
+{
+  "success": true,
+  "data": {
+    "it_id": "77777",
+    "ca_id": "20",
+    "it_brand": "",
+    "it_maker": "",
+    "it_origin": "",
+    "it_model": "",
+    "it_seo_title": "올림푸스-e-pl8-14-42mm-ez-kit",
+    "it_supply_subject": "샌디스크 메모리",
+    "ca_name": "TOP/PANTS",
+    "it_name": "올림푸스 E-PL8 14-42mm EZ Kit",
+    "it_price": 690000,
+    "it_cust_price": 0,
+    "it_point": 0,
+    "it_point_type": 0,
+    "it_stock_qty": 5000,
+    "it_buy_min_qty": 0,
+    "it_buy_max_qty": 0,
+    "it_sc_type": 0,
+    "it_sc_method": 0,
+    "it_sc_price": 0,
+    "it_sc_minimum": 0,
+    "it_sc_qty": 0,
+    "it_tel_inq": "0",
+    "it_soldout": "0",
+    "it_stock_sms": "0",
+    "stock_sms_privacy": "'SIR'은 (이하 '회사'는)\r\n고객님의 개인정보를 중요시하며, \"정보통신망 이용촉진 및 정보보호\"에 관한 법률을 준수하고 있습니다.\r\n\r\n회사는 개인정보취급방침을 통하여 고객님께서 제공하시는 개인정보가 어떠한 용도와 방식으로 이용되고 있으며, 개인정보보호를 위해 어떠한 조치가 취해지고 있는지 알려드립니다.\r\n\r\n\r\n회사는 개인정보취급방침을 개정하는 경우 웹사이트 공지사항(또는 개별공지)을 통하여 공지할 것입니다.\r\n\r\n■ 수집하는 개인정보 항목\r\n\r\n회사는 회원가입, 상담, 서비스 신청 등등을 위해 아래와 같은 개인정보를 수집하고 있습니다.\r\n\r\n\r\nο 수집항목 : 이름 , 생년월일 , 성별 , 로그인ID , 비밀번호 , 비밀번호 질문과 답변 , 이메일 , 서비스 이용기록 , 접속 로그 , 쿠키 , 접속 IP 정보 , 결제기록\r\nο 개인정보 수집방법 : 홈페이지(회원가입,게시판) \r\n\r\n■ 개인정보의 수집 및 이용목적\r\n\r\n회사는 수집한 개인정보를 다음의 목적을 위해 활용합니다..\r\n\r\n ο 서비스 제공에 관한 계약 이행 및 서비스 제공에 따른 요금정산\r\n콘텐츠 제공\r\n ο 회원 관리\r\n회원제 서비스 이용에 따른 본인확인 , 개인 식별 , 불량회원의 부정 이용 방지와 비인가 사용 방지 , 가입 의사 확인 , 연령확인 , 만14세 미만 아동 개인정보 수집 시 법정 대리인 동의여부 확인\r\n ο 마케팅 및 광고에 활용\r\n접속 빈도 파악 또는 회원의 서비스 이용에 대한 통계\r\n\r\n■ 개인정보의 보유 및 이용기간\r\n\r\n원칙적으로, 개인정보 수집 및 이용목적이 달성된 후에는 해당 정보를 지체 없이 파기합니다. 단, 관계법령의 규정에 의하여 보존할 필요가 있는 경우 회사는 아래와 같이 관계법령에서 정한 일정한 기간 동안 회원정보를 보관합니다.\r\n\r\n\r\n 보존 항목 : 로그인ID , 결제기록\r\n 보존 근거 : 신용정보의 이용 및 보호에 관한 법률\r\n 보존 기간 : 3년\r\n\r\n표시/광고에 관한 기록 : 6개월 (전자상거래등에서의 소비자보호에 관한 법률)\r\n계약 또는 청약철회 등에 관한 기록 : 5년 (전자상거래등에서의 소비자보호에 관한 법률)\r\n대금결제 및 재화 등의 공급에 관한 기록 : 5년 (전자상거래등에서의 소비자보호에 관한 법률)\r\n소비자의 불만 또는 분쟁처리에 관한 기록 : 3년 (전자상거래등에서의 소비자보호에 관한 법률)\r\n신용정보의 수집/처리 및 이용 등에 관한 기록 : 3년 (신용정보의 이용 및 보호에 관한 법률)",
+    "it_nocoupon": 0,
+    "it_type1": 0,
+    "it_type2": 0,
+    "it_type3": 0,
+    "it_type4": 0,
+    "it_type5": 0,
+    "it_basic": "",
+    "it_explan": "",
+    "it_head_html": "",
+    "it_tail_html": "",
+    "it_info_gubun": "wear",
+    "it_info_title": "의류",
+    "it_info_items": [
+      {
+        "key": "material",
+        "title": "제품소재",
+        "value": "상품페이지 참고",
+        "example": "섬유의 조성 또는 혼용률을 백분율로 표시, 기능성인 경우 성적서 또는 허가서"
+      },
+      {
+        "key": "color",
+        "title": "색상",
+        "value": "상품페이지 참고",
+        "example": ""
+      },
+      {
+        "key": "size",
+        "title": "치수",
+        "value": "상품페이지 참고",
+        "example": ""
+      },
+      {
+        "key": "maker",
+        "title": "제조자",
+        "value": "상품페이지 참고",
+        "example": "수입품의 경우 수입자를 함께 표기 (병행수입의 경우 병행수입 여부로 대체 가능)"
+      },
+      {
+        "key": "caution",
+        "title": "세탁방법 및 취급시 주의사항",
+        "value": "상품페이지 참고",
+        "example": ""
+      },
+      {
+        "key": "manufacturing_ym",
+        "title": "제조연월",
+        "value": "상품페이지 참고",
+        "example": ""
+      },
+      {
+        "key": "warranty",
+        "title": "품질보증기준",
+        "value": "상품페이지 참고",
+        "example": ""
+      },
+      {
+        "key": "as",
+        "title": "A/S 책임자와 전화번호",
+        "value": "상품페이지 참고",
+        "example": ""
+      }
+    ],
+    "it_option_subject": "색상,사이즈",
+    "image_url": "",
+    "images": [],
+    "options": [
+      {
+        "io_no": 3007,
+        "io_id": "화이트\u001e100",
+        "io_type": 0,
+        "it_id": "77777",
+        "io_price": 222,
+        "io_stock_qty": 9999,
+        "io_noti_qty": 100,
+        "io_use": 1
+      },
+      {
+        "io_no": 3008,
+        "io_id": "브라운\u001e90",
+        "io_type": 0,
+        "it_id": "77777",
+        "io_price": 333,
+        "io_stock_qty": 9999,
+        "io_noti_qty": 100,
+        "io_use": 1
+      },
+      {
+        "io_no": 3009,
+        "io_id": "브라운\u001e100",
+        "io_type": 0,
+        "it_id": "77777",
+        "io_price": 444,
+        "io_stock_qty": 9999,
+        "io_noti_qty": 100,
+        "io_use": 1
+      },
+      {
+        "io_no": 3010,
+        "io_id": "샌디스크 메모리\u001e16기가",
+        "io_type": 1,
+        "it_id": "77777",
+        "io_price": 20000,
+        "io_stock_qty": 9992,
+        "io_noti_qty": 100,
+        "io_use": 1
+      },
+      {
+        "io_no": 3011,
+        "io_id": "샌디스크 메모리\u001e32기가",
+        "io_type": 1,
+        "it_id": "77777",
+        "io_price": 30000,
+        "io_stock_qty": 9995,
+        "io_noti_qty": 100,
+        "io_use": 1
+      },
+      {
+        "io_no": 3012,
+        "io_id": "샌디스크 메모리\u001e64기가",
+        "io_type": 1,
+        "it_id": "77777",
+        "io_price": 45000,
+        "io_stock_qty": 34,
+        "io_noti_qty": 100,
+        "io_use": 1
+      }
+    ],
+    "category": {
+      "ca_id": "20",
+      "ca_name": "TOP/PANTS"
+    },
+    "review_count": 7,
+    "review_avg": 4,
+    "qa_count": 3,
+    "related_items": [],
+    "prev_item": null,
+    "next_item": {
+      "it_id": "1487833104",
+      "it_name": "제품7",
+      "it_seo_title": "제품7",
+      "image_url": ""
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "success": true,
+  "data": [
+    {
+      "bn_id": 6,
+      "bn_alt": "Autumn table | 한 그릇으로 차분해지는 저녁",
+      "bn_url": "/shop/list.php?ca_id=20",
+      "bn_position": "메인",
+      "bn_device": "both",
+      "bn_border": 0,
+      "bn_new_win": 0,
+      "bn_order": 1,
+      "image_url": "http://localhost/api/v1/shop/images/banner/6?20260914121621",
+      "hit_url": "http://localhost/shop/bannerhit.php?bn_id=6"
+    },
+    {
+      "bn_id": 7,
+      "bn_alt": "Desk light | 집중이 머무는 책상",
+      "bn_url": "/shop/list.php?ca_id=30",
+      "bn_position": "메인",
+      "bn_device": "both",
+      "bn_border": 0,
+      "bn_new_win": 0,
+      "bn_order": 2,
+      "image_url": "http://localhost/api/v1/shop/images/banner/7?20260914121621",
+      "hit_url": "http://localhost/shop/bannerhit.php?bn_id=7"
+    },
+    {
+      "bn_id": 8,
+      "bn_alt": "Kitchen ritual | 매일의 식탁을 위한 나무",
+      "bn_url": "/shop/list.php?ca_id=40",
+      "bn_position": "메인",
+      "bn_device": "both",
+      "bn_border": 0,
+      "bn_new_win": 0,
+      "bn_order": 3,
+      "image_url": "http://localhost/api/v1/shop/images/banner/8?20260914121621",
+      "hit_url": "http://localhost/shop/bannerhit.php?bn_id=8"
+    },
+    {
+      "bn_id": 9,
+      "bn_alt": "Soft utility | 오래 쓰는 리넨 앞치마",
+      "bn_url": "/shop/list.php?ca_id=50",
+      "bn_position": "메인",
+      "bn_device": "both",
+      "bn_border": 0,
+      "bn_new_win": 0,
+      "bn_order": 4,
+      "image_url": "http://localhost/api/v1/shop/images/banner/9?20260914121621",
+      "hit_url": "http://localhost/shop/bannerhit.php?bn_id=9"
+    },
+    {
+      "bn_id": 10,
+      "bn_alt": "Clear morning | 가볍게 채우는 물 한 잔",
+      "bn_url": "/shop/list.php?ca_id=60",
+      "bn_position": "메인",
+      "bn_device": "both",
+      "bn_border": 0,
+      "bn_new_win": 0,
+      "bn_order": 5,
+      "image_url": "http://localhost/api/v1/shop/images/banner/10?20260914121621",
+      "hit_url": "http://localhost/shop/bannerhit.php?bn_id=10"
+    },
+    {
+      "bn_id": 11,
+      "bn_alt": "Quiet notes | 손끝에 남는 종이와 금속",
+      "bn_url": "/shop/list.php?ca_id=70",
+      "bn_position": "메인",
+      "bn_device": "both",
+      "bn_border": 0,
+      "bn_new_win": 0,
+      "bn_order": 6,
+      "image_url": "http://localhost/api/v1/shop/images/banner/11?20260914121621",
+      "hit_url": "http://localhost/shop/bannerhit.php?bn_id=11"
+    }
+  ]
+}

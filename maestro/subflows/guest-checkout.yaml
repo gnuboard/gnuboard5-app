@@ -1,0 +1,142 @@
+# 게스트: 상품 담기 → 장바구니 → 주문서 → 주문자·배송지·이메일·결제 수단(METHOD)·비회원 비밀번호·약관 → 주문 버튼까지.
+# env: PRODUCT_ID, PRODUCT_NAME, METHOD(bank|card|…), GUEST_PASSWORD. 무통장이면 입금자명도 채운다.
+appId: kr.sirsoft.gnuboard5
+---
+- runFlow:
+    file: add-product-to-cart.yaml
+    env:
+      PRODUCT_ID: ${PRODUCT_ID}
+      PRODUCT_NAME: ${PRODUCT_NAME}
+- tapOn:
+    id: 'product-go-cart'
+- extendedWaitUntil:
+    visible:
+      id: 'cart-list'
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: 'cart-order'
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: 'cart-order'
+- extendedWaitUntil:
+    visible:
+      id: 'checkout-form'
+    timeout: 30000
+
+- tapOn:
+    id: 'orderer-name'
+- eraseText
+- inputText: 'E2E Guest'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: 'orderer-hp'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'orderer-hp'
+- eraseText
+- inputText: '010-1234-5678'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: 'orderer-zip'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'orderer-zip'
+- eraseText
+- inputText: '06236'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: 'orderer-addr1'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'orderer-addr1'
+- eraseText
+- inputText: 'Teheran-ro 123, Gangnam-gu, Seoul'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: 'orderer-addr2'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'orderer-addr2'
+- eraseText
+- inputText: 'E2E 101'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: 'checkout-email'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'checkout-email'
+- eraseText
+- inputText: 'e2e-guest@example.com'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+
+- scrollUntilVisible:
+    element:
+      id: 'method-${METHOD}'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'method-${METHOD}'
+- runFlow:
+    when:
+      true: ${METHOD == 'bank'}
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: 'checkout-depositor'
+          direction: DOWN
+          centerElement: true
+      - tapOn:
+          id: 'checkout-depositor'
+      - eraseText
+      - inputText: 'E2E Guest'
+      # 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+      - pressKey: Enter
+
+- scrollUntilVisible:
+    element:
+      id: 'checkout-guest-password'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'checkout-guest-password'
+- eraseText
+- inputText: ${GUEST_PASSWORD}
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: 'agree-terms'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'agree-terms'
+- scrollUntilVisible:
+    element:
+      id: 'agree-privacy'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'agree-privacy'
+- scrollUntilVisible:
+    element:
+      id: 'checkout-submit'
+    direction: DOWN
+    centerElement: true

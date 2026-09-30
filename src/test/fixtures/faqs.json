@@ -1,0 +1,79 @@
+{
+  "success": true,
+  "data": {
+    "masters": [
+      {
+        "fm_id": 1,
+        "fm_subject": "회원",
+        "fm_head_html": "",
+        "fm_tail_html": "",
+        "fm_mobile_head_html": "",
+        "fm_mobile_tail_html": "",
+        "fm_order": 0
+      },
+      {
+        "fm_id": 2,
+        "fm_subject": "주문",
+        "fm_head_html": "",
+        "fm_tail_html": "",
+        "fm_mobile_head_html": "",
+        "fm_mobile_tail_html": "",
+        "fm_order": 1
+      }
+    ],
+    "current": {
+      "fm_id": 1,
+      "fm_subject": "회원",
+      "fm_head_html": "",
+      "fm_tail_html": "",
+      "fm_mobile_head_html": "",
+      "fm_mobile_tail_html": "",
+      "fm_order": 0
+    },
+    "items": [
+      {
+        "fa_id": 1,
+        "fm_id": 1,
+        "fa_subject": "<div>test</div>\r\n",
+        "fa_content": "<div>test</div>\r\n",
+        "fa_order": 0
+      },
+      {
+        "fa_id": 3,
+        "fm_id": 1,
+        "fa_subject": "그누보드란?",
+        "fa_content": "<p><span style=\"color: rgb(34, 34, 34); font-size: 14.004px; font-family: gulim, helvetica;\">그누보드는 &nbsp;공유정신을 나타내는 \"GNU\" 와 게시판을 나타내는 \"Board\" 가 합쳐진 말입니다.</span><span style=\"color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\"></span></p><div style=\"color: rgb(34, 34, 34); font-size: 14.004px; font-family: gulim, helvetica; line-height: 23.544px;\"><br></div><div style=\"color: rgb(34, 34, 34); font-size: 14.004px; font-family: gulim, helvetica; line-height: 23.544px;\">그누보드는 웹에서 게시판, 회원정보 등을 편리하게 관리하는 게시판(BBS - Bulletin Board System) 프로그램으로, 오픈된 소스코드를 바탕으로 다양한 기능(플러그인)을 추가하기 쉽게 제작되어 있습니다.</div><div style=\"color: rgb(34, 34, 34); font-size: 14.004px; font-family: gulim, helvetica; line-height: 23.544px;\"><br></div><div style=\"color: rgb(34, 34, 34); font-size: 14.004px; font-family: gulim, helvetica; line-height: 23.544px;\">그누보드의 대표적인 플러그인 으로는 쇼핑몰 기능을 하는 \"영카트\" 가 있습니다.</div>",
+        "fa_order": 0
+      },
+      {
+        "fa_id": 4,
+        "fm_id": 1,
+        "fa_subject": "<p><strong id=\"head_title\" style=\"display: block; margin: 0px 70px 0px 0px; font-size: 1.33em; line-height: 1.3em; word-break: break-all; overflow: hidden; overflow-wrap: break-word; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif;\">그누보드5, 영카트5 설치 환경</strong></p>",
+        "fa_content": "<div style=\"color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\"><b>그누보드5, 영카트5 공통</b></div><ul style=\"list-style-position: inside; list-style-image: initial; padding: 0px; margin: 0px 0px 0px 25px; font-size: 1.025em; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif;\"><li style=\"list-style: inherit !important; padding: 0px; margin: 0px; font-size: 1.025em;\">PHP 5.0 이상</li><li style=\"list-style: inherit !important; padding: 0px; margin: 0px; font-size: 1.025em;\">MySQL 5.0 이상 or MySQL 5.0 이상의 기능을 만족하는 mariaDB</li><li style=\"list-style: inherit !important; padding: 0px; margin: 0px; font-size: 1.025em;\">리눅스 호환 OS<br><br></li><li style=\"list-style: inherit !important; padding: 0px; margin: 0px; font-size: 1.025em;\">필수 라이브러리<br><ul style=\"list-style-position: inside; list-style-image: initial; padding: 0px; margin: 0px 0px 0px 25px; font-size: 1.025em;\"><li style=\"list-style: inherit !important; padding: 0px; margin: 0px; font-size: 1.025em;\">GD Library 2.0 이상</li><li style=\"list-style: inherit !important; padding: 0px; margin: 0px; font-size: 1.025em;\">iconv<br><br></li></ul></li><li style=\"list-style: inherit !important; padding: 0px; margin: 0px; font-size: 1.025em;\">SNS 사용시 필수 (글을 SNS 로 복사하는 기능)<ul style=\"list-style-position: inside; list-style-image: initial; padding: 0px; margin: 0px 0px 0px 25px; font-size: 1.025em;\"><li style=\"list-style: inherit !important; padding: 0px; margin: 0px; font-size: 1.025em;\">cURL</li><li style=\"list-style: inherit !important; padding: 0px; margin: 0px; font-size: 1.025em;\">JSON</li></ul></li></ul><div style=\"color: rgb(34, 34, 34); font-size: 10pt; font-family: gulim, helvetica; line-height: 23.544px;\"><br></div><div style=\"color: rgb(34, 34, 34); font-size: 10pt; font-family: gulim, helvetica; line-height: 23.544px;\"><b>추가로 필요한 모듈 or 프로그램</b></div><div style=\"color: rgb(34, 34, 34); font-size: 10pt; font-family: gulim, helvetica; line-height: 23.544px;\"><ul style=\"list-style-position: inside; list-style-image: initial; padding: 0px; margin: 0px 0px 0px 25px; font-size: 1.025em;\"><li style=\"list-style: inherit !important; padding: 0px; margin: 0px; font-size: 1.025em;\">스마트폰 결제시 필수 (영카트5)<ul style=\"list-style-position: inside; list-style-image: initial; padding: 0px; margin: 0px 0px 0px 25px; font-size: 1.025em;\"><li style=\"list-style: inherit !important; padding: 0px; margin: 0px; font-size: 1.025em;\">SOAP</li><li style=\"list-style: inherit !important; padding: 0px; margin: 0px; font-size: 1.025em;\">openssl</li></ul></li></ul></div><div style=\"color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\"><span style=\"color: rgb(192, 0, 0);\"><br></span></div><div style=\"color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\"><span style=\"color: rgb(192, 0, 0);\">SIR 에서 직접 제작한 그누보드5 및 호환 프로그램은 오직 리눅스에서만 개발 및 테스트 하였습니다.<br>타 OS 에서의 정상 작동 여부는 장담하지 않습니다.</span></div>",
+        "fa_order": 0
+      },
+      {
+        "fa_id": 5,
+        "fm_id": 1,
+        "fa_subject": "<p><strong id=\"head_title\" style=\"display: block; margin: 0px 70px 0px 0px; font-size: 1.33em; line-height: 1.3em; word-break: break-all; overflow: hidden; overflow-wrap: break-word; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif;\">그누보드5 - 매뉴얼</strong></p>",
+        "fa_content": "<p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">현재 준비중에 있습니다.</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">&nbsp;</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">임시로 워드 파일을 압축하여 제공하고 있습니다.</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">&nbsp;</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">웹에서는 아래 주소에서 확인할수 있습니다.</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">&nbsp;</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\"><a href=\"https://sir.kr/manual/\" target=\"_blank\" rel=\"noreferrer noopener\" style=\"color: rgb(7, 130, 193);\">https://sir.kr/manual/</a></p>",
+        "fa_order": 0
+      },
+      {
+        "fa_id": 6,
+        "fm_id": 1,
+        "fa_subject": "<p><strong id=\"head_title\" style=\"display: block; margin: 0px 70px 0px 0px; font-size: 1.33em; line-height: 1.3em; word-break: break-all; overflow: hidden; overflow-wrap: break-word; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif;\">라이선스 문의에 대한 답변</strong></p>",
+        "fa_content": "<p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">SIR에서 배포하는 솔루션으로 자신만의 솔루션으로 만들어 배포 및 판매가 가능한지를 묻는 경우가 가끔 있습니다.</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">이럴때마다 저희 SIR에서는 한결 같은 답변을 드리고 있어 이 답변을 자주하시는 질문(FAQ) 모음에 넣게 되었습니다.</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">&nbsp;</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">그누보드5, 영카트5는 LGPL로, 그누커머스는 GPL로 라이선스가 지정되어 있습니다.</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">이 라이선스라는 것은 이미 SIR의 솔루션을 이용하는 방법에 대해 알려 드리고 있는 것이므로 이것에 대한 별도의 답변이나 안내는 적절하지 않습니다.</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">&nbsp;</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">라이선스의 내용이 다소 어렵더라도 해결책은 고스란히 라이선스에 나와 있습니다.</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">만약, 하시고자 하는 일이 라이선스에서 허락하는 것이라면 저희에게 별도의 문의는 필요치 않으며, 그 반대되는 상황도 마찬가지로 저희에게 제약을 풀어줄것을 요청할수 없습니다.</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">&nbsp;</p><p style=\"word-break: break-all; color: rgb(34, 34, 34); font-family: &quot;Apple SD Gothic Neo&quot;, &quot;Malgun Gothic&quot;, &quot;맑은 고딕&quot;, sans-serif; font-size: 14.004px;\">결론적으로&nbsp;<span style=\"font-size: 11pt;\">라이선스는 저희 SIR의 어떤 답변보다도 우선하므로 라이선스를 숙지하여 적용해 주시기 바랍니다.</span></p>",
+        "fa_order": 0
+      }
+    ],
+    "meta": {
+      "total": 5,
+      "per_page": 15,
+      "current_page": 1,
+      "last_page": 1,
+      "from": 1,
+      "to": 5
+    }
+  }
+}

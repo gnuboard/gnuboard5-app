@@ -1,0 +1,30 @@
+# MY 탭 → 로그아웃 → 확인 다이얼로그 → 게스트 상태(로그인 행) 확인.
+appId: kr.sirsoft.gnuboard5
+---
+- tapOn:
+    id: 'tab-MyTab'
+- tapOn:
+    id: 'menu-my-settings'
+# 로그아웃 행은 목록 위쪽에 있다 — 앞 단계가 아래로 스크롤해 둔 상태면 위로 올려 찾는다.
+- runFlow:
+    when:
+      notVisible:
+        id: 'settings-logout'
+    commands:
+      - scrollUntilVisible:
+          element:
+            id: 'settings-logout'
+          direction: UP
+          timeout: 15000
+- tapOn:
+    id: 'settings-logout'
+- runFlow:
+    file: confirm-dialog.yaml
+    env:
+      BUTTON_TEXT: '로그아웃'
+- extendedWaitUntil:
+    visible:
+      id: 'settings-login'
+    timeout: 15000
+- assertNotVisible:
+    id: 'settings-member'

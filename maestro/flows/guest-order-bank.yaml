@@ -1,0 +1,184 @@
+# T-P1D-12 (PLAN §2.5 종료 기준 1, §7.4): 게스트 무통장 주문 → 주문 완료 → uid 로 주문 상세.
+# 서버 전제: 결제 설정에 무통장(bank) 수단과 입금 계좌 1개 이상. 주문 행은 dev 에서만 만든다(프로덕션 금지).
+# env: E2E_PRODUCT_ID, E2E_PRODUCT_NAME, E2E_GUEST_ORDER_PASSWORD(비회원 주문 비밀번호, 영문/숫자 3자 이상)
+# 입력값은 ASCII 로 둔다(Android inputText 는 한글을 넣지 못한다).
+appId: kr.sirsoft.gnuboard5
+tags:
+  - p1d
+  - shop
+  - guest
+  - payment
+---
+- runFlow: ../subflows/launch-fresh.yaml
+- runFlow:
+    file: ../subflows/add-product-to-cart.yaml
+    env:
+      PRODUCT_ID: ${E2E_PRODUCT_ID}
+      PRODUCT_NAME: ${E2E_PRODUCT_NAME}
+
+# 상품 상세 우측 🛒 → 장바구니 탭 → 주문하기
+- tapOn:
+    id: 'product-go-cart'
+- extendedWaitUntil:
+    visible:
+      id: 'cart-list'
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: 'cart-order'
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: 'cart-order'
+- extendedWaitUntil:
+    visible:
+      id: 'checkout-form'
+    timeout: 30000
+
+# 주문자(받는 분 = 주문자와 같음이 기본)
+- tapOn:
+    id: 'orderer-name'
+- eraseText
+- inputText: 'E2E Guest'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: 'orderer-hp'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'orderer-hp'
+- eraseText
+- inputText: '010-1234-5678'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: 'orderer-zip'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'orderer-zip'
+- eraseText
+- inputText: '06236'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: 'orderer-addr1'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'orderer-addr1'
+- eraseText
+- inputText: 'Teheran-ro 123, Gangnam-gu, Seoul'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: 'orderer-addr2'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'orderer-addr2'
+- eraseText
+- inputText: 'E2E 101'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+- scrollUntilVisible:
+    element:
+      id: 'checkout-email'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'checkout-email'
+- eraseText
+- inputText: 'e2e-guest@example.com'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+
+# 결제 수단: 무통장 → 입금자명
+- scrollUntilVisible:
+    element:
+      id: 'method-bank'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'method-bank'
+- scrollUntilVisible:
+    element:
+      id: 'checkout-depositor'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'checkout-depositor'
+- eraseText
+- inputText: 'E2E Guest'
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+
+# 비회원 주문 비밀번호
+- scrollUntilVisible:
+    element:
+      id: 'checkout-guest-password'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'checkout-guest-password'
+- eraseText
+- inputText: ${E2E_GUEST_ORDER_PASSWORD}
+# 키보드 닫기: Enter(한 줄 입력은 제출 = 포커스 해제) — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 화면을 닫는다
+- pressKey: Enter
+
+# 약관 동의 → 주문
+- scrollUntilVisible:
+    element:
+      id: 'agree-terms'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'agree-terms'
+- scrollUntilVisible:
+    element:
+      id: 'agree-privacy'
+    direction: DOWN
+    centerElement: true
+- tapOn:
+    id: 'agree-privacy'
+- scrollUntilVisible:
+    element:
+      id: 'checkout-submit'
+    direction: DOWN
+    centerElement: true
+- assertVisible:
+    id: 'summary-total'
+- tapOn:
+    id: 'checkout-submit'
+
+# 주문 완료(무통장: 입금 안내) → 주문 상세(uid)
+- extendedWaitUntil:
+    visible:
+      id: 'order-complete-heading'
+    timeout: 30000
+- assertVisible:
+    text: '주문이 접수됐어요'
+- assertVisible:
+    id: 'order-complete-id'
+- scrollUntilVisible:
+    element:
+      id: 'order-complete-detail'
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: 'order-complete-detail'
+- extendedWaitUntil:
+    visible:
+      id: 'order-detail'
+    timeout: 30000
+- assertVisible:
+    id: 'order-detail-id'
+- assertVisible:
+    id: 'order-detail-status'
+- assertNotVisible:
+    id: 'order-detail-lookup'

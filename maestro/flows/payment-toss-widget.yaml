@@ -1,0 +1,50 @@
+# T-P1D-06/12: 게스트 카드 주문 → 실제 Toss 결제창(v2, 관리자 설정 키·수단, 테스트 배지) → 닫기 → 결제 취소 안내 → 주문서.
+# 카드사 인증 페이지는 Maestro 로 다룰 수 없어(PLAN R20) 위젯이 뜨고 취소가 서버 초안 취소까지 이어지는지만 본다.
+# 전제: 관리자 쇼핑몰 설정 PG=토스페이먼츠, '결제 테스트'=테스트결제(테스트 키). EXPO_PUBLIC_TOSS_MOCK 이 없는 Metro 로 실행.
+# env: E2E_PRODUCT_ID, E2E_PRODUCT_NAME, E2E_GUEST_ORDER_PASSWORD
+appId: kr.sirsoft.gnuboard5
+tags:
+  - p1d
+  - shop
+  - guest
+  - payment
+---
+- runFlow: ../subflows/launch-fresh.yaml
+- runFlow:
+    file: ../subflows/guest-checkout.yaml
+    env:
+      PRODUCT_ID: ${E2E_PRODUCT_ID}
+      PRODUCT_NAME: ${E2E_PRODUCT_NAME}
+      METHOD: card
+      GUEST_PASSWORD: ${E2E_GUEST_ORDER_PASSWORD}
+- tapOn:
+    id: 'checkout-submit'
+
+# 결제창 화면
+- extendedWaitUntil:
+    visible:
+      id: 'toss-payment'
+    timeout: 30000
+- assertVisible:
+    id: 'toss-test-mode'
+- assertVisible:
+    id: 'toss-webview'
+# Toss 결제창(v2)이 WebView 안에 뜰 때까지
+- waitForAnimationToEnd:
+    timeout: 8000
+
+# 닫기 → 그만두기 → 주문서로, 취소 안내
+- tapOn:
+    text: '✕'
+- runFlow:
+    file: ../subflows/confirm-dialog.yaml
+    env:
+      BUTTON_TEXT: '그만두기'
+- extendedWaitUntil:
+    visible:
+      text: '결제를 취소했어요'
+    timeout: 20000
+- extendedWaitUntil:
+    visible:
+      id: 'checkout-form'
+    timeout: 20000

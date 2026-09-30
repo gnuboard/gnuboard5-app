@@ -1,0 +1,37 @@
+# MY 탭 → 로그인 → 아이디/비밀번호 → MY 로 복귀(회원 행 표시). 게스트 상태에서 호출한다.
+# env: USERNAME, PASSWORD (호출하는 흐름이 ${E2E_USER} 등 환경 변수에서 넘긴다 — 여기에 값을 쓰지 않는다).
+appId: kr.sirsoft.gnuboard5
+---
+- tapOn:
+    id: 'tab-MyTab'
+- tapOn:
+    id: 'menu-my-settings'
+- scrollUntilVisible:
+    element:
+      id: 'settings-login'
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: 'settings-login'
+- extendedWaitUntil:
+    visible:
+      id: 'login-id'
+    timeout: 10000
+- tapOn:
+    id: 'login-id'
+- eraseText
+- inputText: ${USERNAME}
+- tapOn:
+    id: 'login-password'
+- eraseText
+- inputText: ${PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: 'login-submit'
+- extendedWaitUntil:
+    visible:
+      id: 'settings-member'
+    timeout: 20000
+- assertVisible:
+    id: 'settings-member'
+    text: '.*\(${USERNAME}\).*'

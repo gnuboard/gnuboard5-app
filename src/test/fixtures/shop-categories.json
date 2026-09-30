@@ -1,0 +1,172 @@
+{
+  "success": true,
+  "data": [
+    {
+      "ca_id": "20",
+      "ca_name": "TOP/PANTS",
+      "ca_order": 0,
+      "ca_skin": "list.10.skin.php",
+      "depth": 1,
+      "item_count": 48,
+      "children": [
+        {
+          "ca_id": "2010",
+          "ca_name": "TOP",
+          "ca_order": 0,
+          "ca_skin": "list.10.skin.php",
+          "depth": 2,
+          "item_count": 32,
+          "children": [
+            {
+              "ca_id": "201010",
+              "ca_name": "셔츠",
+              "ca_order": 0,
+              "ca_skin": "list.10.skin.php",
+              "depth": 3,
+              "item_count": 24,
+              "children": [
+                {
+                  "ca_id": "20101010",
+                  "ca_name": "체크/슬림",
+                  "ca_order": 0,
+                  "ca_skin": "list.10.skin.php",
+                  "depth": 4,
+                  "item_count": 18,
+                  "children": [
+                    {
+                      "ca_id": "2010101010",
+                      "ca_name": "체크",
+                      "ca_order": 0,
+                      "ca_skin": "list.10.skin.php",
+                      "depth": 5,
+                      "item_count": 9,
+                      "children": []
+                    },
+                    {
+                      "ca_id": "2010101020",
+                      "ca_name": "슬림",
+                      "ca_order": 0,
+                      "ca_skin": "list.10.skin.php",
+                      "depth": 5,
+                      "item_count": 5,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "ca_id": "20101020",
+                  "ca_name": "드레스셔츠",
+                  "ca_order": 0,
+                  "ca_skin": "list.10.skin.php",
+                  "depth": 4,
+                  "item_count": 6,
+                  "children": []
+                }
+              ]
+            },
+            {
+              "ca_id": "201020",
+              "ca_name": "티",
+              "ca_order": 0,
+              "ca_skin": "list.10.skin.php",
+              "depth": 3,
+              "item_count": 8,
+              "children": []
+            }
+          ]
+        },
+        {
+          "ca_id": "2020",
+          "ca_name": "PANTS",
+          "ca_order": 0,
+          "ca_skin": "list.10.skin.php",
+          "depth": 2,
+          "item_count": 8,
+          "children": []
+        }
+      ]
+    },
+    {
+      "ca_id": "30",
+      "ca_name": "테스트",
+      "ca_order": 0,
+      "ca_skin": "list.10.skin.php",
+      "depth": 1,
+      "item_count": 11,
+      "children": []
+    },
+    {
+      "ca_id": "40",
+      "ca_name": "포스",
+      "ca_order": 0,
+      "ca_skin": "list.10.skin.php",
+      "depth": 1,
+      "item_count": 0,
+      "children": []
+    },
+    {
+      "ca_id": "50",
+      "ca_name": "테이블오더",
+      "ca_order": 0,
+      "ca_skin": "list.10.skin.php",
+      "depth": 1,
+      "item_count": 0,
+      "children": []
+    },
+    {
+      "ca_id": "60",
+      "ca_name": "멀티패드",
+      "ca_order": 0,
+      "ca_skin": "list.10.skin.php",
+      "depth": 1,
+      "item_count": 0,
+      "children": []
+    },
+    {
+      "ca_id": "70",
+      "ca_name": "제조사",
+      "ca_order": 9001,
+      "ca_skin": "list.10.skin.php",
+      "depth": 1,
+      "item_count": 0,
+      "children": [
+        {
+          "ca_id": "7010",
+          "ca_name": "나이스정보통신 NICE",
+          "ca_order": 0,
+          "ca_skin": "list.10.skin.php",
+          "depth": 2,
+          "item_count": 0,
+          "children": []
+        },
+        {
+          "ca_id": "7020",
+          "ca_name": "KIS정보통신",
+          "ca_order": 0,
+          "ca_skin": "list.10.skin.php",
+          "depth": 2,
+          "item_count": 0,
+          "children": []
+        },
+        {
+          "ca_id": "7030",
+          "ca_name": "코밴 KOVAN",
+          "ca_order": 0,
+          "ca_skin": "list.10.skin.php",
+          "depth": 2,
+          "item_count": 0,
+          "children": []
+        },
+        {
+          "ca_id": "7040",
+          "ca_name": "한국정보통신 KICC",
+          "ca_order": 0,
+          "ca_skin": "list.10.skin.php",
+          "depth": 2,
+          "item_count": 0,
+          "children": []
+        }
+      ]
+    }
+  ]
+}

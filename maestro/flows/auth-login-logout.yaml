@@ -1,0 +1,82 @@
+# T-P1A (PLAN §2.2 종료 기준 3, §7.4): 로그인 실패 안내 → 로그인 → MY 회원 행 → 로그아웃 → 게스트 복귀.
+# env: E2E_USER, E2E_PASSWORD (seed_e2e_members.php 로 만든 e2e_user1 권장).
+appId: kr.sirsoft.gnuboard5
+tags:
+  - p1a
+  - auth
+  - smoke
+---
+- runFlow: ../subflows/launch-fresh.yaml
+
+# 1) 틀린 비밀번호 → 인라인 오류(login-error), 화면 유지
+- tapOn:
+    id: 'tab-MyTab'
+- tapOn:
+    id: 'menu-my-settings'
+- scrollUntilVisible:
+    element:
+      id: 'settings-login'
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: 'settings-login'
+- extendedWaitUntil:
+    visible:
+      id: 'login-id'
+    timeout: 10000
+- tapOn:
+    id: 'login-id'
+- inputText: ${E2E_USER}
+- tapOn:
+    id: 'login-password'
+- inputText: 'wrong-password-e2e'
+- hideKeyboard
+- tapOn:
+    id: 'login-submit'
+- extendedWaitUntil:
+    visible:
+      id: 'login-error'
+    timeout: 15000
+- assertVisible:
+    text: '아이디 또는 비밀번호가 올바르지 않습니다.'
+- back
+- extendedWaitUntil:
+    visible:
+      id: 'settings-login'
+    timeout: 10000
+
+# 2) 올바른 자격 증명 → MY 에 '닉네임 (아이디)' 행, 로그아웃·탈퇴 행 노출
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      USERNAME: ${E2E_USER}
+      PASSWORD: ${E2E_PASSWORD}
+- assertNotVisible:
+    id: 'settings-login'
+- scrollUntilVisible:
+    element:
+      id: 'settings-withdraw'
+    direction: DOWN
+    timeout: 10000
+
+# 3) 콜드 재시작 후에도 세션 유지(SecureStore refresh 복원)
+- stopApp
+- launchApp:
+    permissions:
+      notifications: allow
+- extendedWaitUntil:
+    visible:
+      id: 'tab-HomeTab'
+    timeout: 180000
+- runFlow: ../subflows/dismiss-popups.yaml
+- tapOn:
+    id: 'tab-MyTab'
+- tapOn:
+    id: 'menu-my-settings'
+- extendedWaitUntil:
+    visible:
+      id: 'settings-member'
+    timeout: 20000
+
+# 4) 로그아웃 → 게스트
+- runFlow: ../subflows/logout.yaml

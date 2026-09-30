@@ -1,0 +1,148 @@
+{
+  "success": true,
+  "data": {
+    "category": {
+      "ca_id": "20",
+      "ca_name": "TOP/PANTS",
+      "ca_order": 0,
+      "ca_skin": "list.10.skin.php",
+      "ca_use": 1
+    },
+    "subcategories": [
+      {
+        "ca_id": "2010",
+        "ca_name": "TOP",
+        "ca_order": 0,
+        "ca_skin": "list.10.skin.php",
+        "item_count": 33
+      },
+      {
+        "ca_id": "201010",
+        "ca_name": "셔츠",
+        "ca_order": 0,
+        "ca_skin": "list.10.skin.php",
+        "item_count": 24
+      },
+      {
+        "ca_id": "20101010",
+        "ca_name": "체크/슬림",
+        "ca_order": 0,
+        "ca_skin": "list.10.skin.php",
+        "item_count": 18
+      },
+      {
+        "ca_id": "2010101010",
+        "ca_name": "체크",
+        "ca_order": 0,
+        "ca_skin": "list.10.skin.php",
+        "item_count": 9
+      },
+      {
+        "ca_id": "2010101020",
+        "ca_name": "슬림",
+        "ca_order": 0,
+        "ca_skin": "list.10.skin.php",
+        "item_count": 5
+      },
+      {
+        "ca_id": "20101020",
+        "ca_name": "드레스셔츠",
+        "ca_order": 0,
+        "ca_skin": "list.10.skin.php",
+        "item_count": 11
+      },
+      {
+        "ca_id": "201020",
+        "ca_name": "티",
+        "ca_order": 0,
+        "ca_skin": "list.10.skin.php",
+        "item_count": 9
+      },
+      {
+        "ca_id": "2020",
+        "ca_name": "PANTS",
+        "ca_order": 0,
+        "ca_skin": "list.10.skin.php",
+        "item_count": 8
+      }
+    ],
+    "items": [
+      {
+        "it_id": "77777",
+        "ca_id": "20",
+        "it_name": "올림푸스 E-PL8 14-42mm EZ Kit",
+        "it_seo_title": "올림푸스-e-pl8-14-42mm-ez-kit",
+        "it_price": 690000,
+        "it_basic_price": 690000,
+        "it_cust_price": 0,
+        "it_point": 0,
+        "it_stock_qty": 5000,
+        "it_soldout": 0,
+        "it_tel_inq": "0",
+        "image_url": ""
+      },
+      {
+        "it_id": "1487833104",
+        "ca_id": "20",
+        "it_name": "제품7",
+        "it_seo_title": "제품7",
+        "it_price": 50000,
+        "it_basic_price": 50000,
+        "it_cust_price": 50000,
+        "it_point": 0,
+        "it_stock_qty": 0,
+        "it_soldout": 0,
+        "it_tel_inq": "0",
+        "image_url": ""
+      },
+      {
+        "it_id": "1487833103",
+        "ca_id": "20",
+        "it_name": "제품6",
+        "it_seo_title": "제품6",
+        "it_price": 50000,
+        "it_basic_price": 50000,
+        "it_cust_price": 50000,
+        "it_point": 0,
+        "it_stock_qty": 0,
+        "it_soldout": 0,
+        "it_tel_inq": "0",
+        "image_url": ""
+      },
+      {
+        "it_id": "1487833102",
+        "ca_id": "20",
+        "it_name": "제품5",
+        "it_seo_title": "제품5",
+        "it_price": 50000,
+        "it_basic_price": 50000,
+        "it_cust_price": 50000,
+        "it_point": 0,
+        "it_stock_qty": 10,
+        "it_soldout": 0,
+        "it_tel_inq": "0",
+        "image_url": ""
+      },
+      {
+        "it_id": "1487833101",
+        "ca_id": "20",
+        "it_name": "제품4",
+        "it_seo_title": "제품4",
+        "it_price": 50000,
+        "it_basic_price": 50000,
+        "it_cust_price": 50000,
+        "it_point": 0,
+        "it_stock_qty": 10,
+        "it_soldout": 0,
+        "it_tel_inq": "0",
+        "image_url": ""
+      }
+    ],
+    "meta": {
+      "total": 48,
+      "per_page": 5,
+      "current_page": 1,
+      "last_page": 10
+    }
+  }
+}

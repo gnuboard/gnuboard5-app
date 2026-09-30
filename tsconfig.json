@@ -1,0 +1,9 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "types": ["jest", "node"],
+    // scripts/*.ts 는 Node `--experimental-strip-types` 로 직접 실행되므로 `.ts` 확장자 import 가 필요하다 (T-P0-14).
+    "allowImportingTsExtensions": true
+  }
+}

@@ -1,0 +1,115 @@
+# T-P1A-07 (PLAN §2.2 종료 기준 3, §7.4): 계정 삭제 — 되돌릴 수 없다.
+# 반드시 매 실행 새로 시드된 전용 계정 e2e_user4 만 쓴다(seed_e2e_members.php). 다른 계정이면 첫 단계에서 멈춘다.
+# env: E2E_DELETE_USER(=e2e_user4), E2E_DELETE_PASSWORD
+# SC-20 서버 검증(해당 회원 리뷰가 GET /shop/reviews 에서 '탈퇴회원', 탈퇴 id 주문 조회 불가)은 UI 가 아니라
+# 계약 테스트(scripts/contract-test.ts) 몫이다 — 이 흐름 뒤에 실행한다.
+appId: kr.sirsoft.gnuboard5
+tags:
+  - p1a
+  - auth
+  - destructive
+---
+- evalScript: ${output.deleteUserOk = (typeof E2E_DELETE_USER !== 'undefined' && E2E_DELETE_USER === 'e2e_user4')}
+- assertTrue:
+    condition: ${output.deleteUserOk}
+    label: 'E2E_DELETE_USER 는 전용 시드 계정 e2e_user4 여야 한다'
+
+- runFlow: ../subflows/launch-fresh.yaml
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      USERNAME: ${E2E_DELETE_USER}
+      PASSWORD: ${E2E_DELETE_PASSWORD}
+
+# MY → 회원 탈퇴 화면
+- scrollUntilVisible:
+    element:
+      id: 'settings-withdraw'
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: 'settings-withdraw'
+- extendedWaitUntil:
+    visible:
+      id: 'withdraw-agree'
+    timeout: 10000
+- assertVisible:
+    text: '정말 탈퇴하시겠어요?'
+
+# 비밀번호만 넣고 동의 없이 제출 → 안내만, 탈퇴 안 됨 (화면은 비밀번호 → 동의 순으로 검사한다)
+- scrollUntilVisible:
+    element:
+      id: 'withdraw-password'
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: 'withdraw-password'
+- inputText: ${E2E_DELETE_PASSWORD}
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: 'withdraw-submit'
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: 'withdraw-submit'
+- assertVisible:
+    text: '안내를 확인하고 동의에 체크해 주세요.'
+
+# 동의 → 탈퇴
+- scrollUntilVisible:
+    element:
+      id: 'withdraw-agree'
+    direction: UP
+    timeout: 10000
+- tapOn:
+    id: 'withdraw-agree'
+- scrollUntilVisible:
+    element:
+      id: 'withdraw-submit'
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    id: 'withdraw-submit'
+- extendedWaitUntil:
+    visible:
+      text: '탈퇴 완료'
+    timeout: 20000
+- runFlow:
+    file: ../subflows/confirm-dialog.yaml
+    env:
+      BUTTON_TEXT: 'OK'
+
+# 게스트로 돌아왔는지
+- tapOn:
+    id: 'tab-MyTab'
+- tapOn:
+    id: 'menu-my-settings'
+- scrollUntilVisible:
+    element:
+      id: 'settings-login'
+    direction: DOWN
+    timeout: 15000
+- assertNotVisible:
+    id: 'settings-member'
+
+# 같은 자격 증명으로 다시 로그인 → 실패 안내(탈퇴/존재하지 않는 계정)
+- tapOn:
+    id: 'settings-login'
+- extendedWaitUntil:
+    visible:
+      id: 'login-id'
+    timeout: 10000
+- tapOn:
+    id: 'login-id'
+- inputText: ${E2E_DELETE_USER}
+- tapOn:
+    id: 'login-password'
+- inputText: ${E2E_DELETE_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: 'login-submit'
+- extendedWaitUntil:
+    visible:
+      id: 'login-error'
+    timeout: 15000

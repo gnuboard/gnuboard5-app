@@ -1,0 +1,17 @@
+# 서버 팝업(PopupHost, nw_division)이 떠 있으면 닫는다. 없으면 아무것도 하지 않는다.
+# 팝업은 설정 조회 뒤 늦게 뜰 수 있어 잠시 기다린다(없으면 optional 로 통과).
+appId: kr.sirsoft.gnuboard5
+---
+- extendedWaitUntil:
+    visible:
+      id: 'popup-close'
+    timeout: 3000
+    optional: true
+- repeat:
+    while:
+      visible:
+        id: 'popup-close'
+    times: 5
+    commands:
+      - tapOn:
+          id: 'popup-close'

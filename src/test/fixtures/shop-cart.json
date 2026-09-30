@@ -1,0 +1,42 @@
+{
+  "success": true,
+  "data": {
+    "cart_id": "2026092406003538",
+    "items": [
+      {
+        "ct_id": 80946,
+        "it_id": "1600398330",
+        "it_name": "테스트삼만칠천팔백",
+        "it_seo_title": "테스트삼만칠천팔백",
+        "ct_price": 37800,
+        "ct_base_price": 37800,
+        "ct_point": 0,
+        "ct_qty": 1,
+        "ct_option": "",
+        "io_type": 0,
+        "io_price": 0,
+        "cp_price": 0,
+        "cp_id": "",
+        "ct_direct": 0,
+        "ct_send_cost": 1,
+        "it_sc_type": 3,
+        "it_sc_method": 1,
+        "it_sc_price": 3000,
+        "it_sc_minimum": 0,
+        "it_sc_qty": 0,
+        "line_total": 37800,
+        "it_basic_price": 37800,
+        "it_stock_qty": 99999,
+        "it_soldout": 0,
+        "it_use": "1",
+        "it_tel_inq": "0",
+        "image_url": ""
+      }
+    ],
+    "total_price": 37800,
+    "total_qty": 1,
+    "cart_coupon": 0,
+    "send_cost": 0,
+    "shipping_cost": 0
+  }
+}

@@ -1,0 +1,52 @@
+# T-P1D-12 / PLAN §7.6 5단계: 결제 성공 콜백 직후(confirm 전) 앱 종료 → 재실행 → 복구 호스트가 저장된 결과로 confirm 재시도.
+# 실행: EXPO_PUBLIC_TOSS_MOCK=success + EXPO_PUBLIC_DEBUG_CONFIRM_DELAY_MS=15000 로 띄운 Metro(개발 빌드).
+# 목 결제 키는 Toss 에 없으므로 재시도한 confirm 을 서버가 확정 실패로 돌려주고(초안 취소·카트 복원) 사용자 판단 시트 없이
+# 정리된다(실측 2026-09-26) — 재실행 뒤 장바구니가 복원됐는지를 본다. 실제 결제 키로 같은 순서를 밟으면 주문 완료로 끝난다(DEVICE-QA).
+# 기본 스위트에서는 제외(toss-mock 태그). env: E2E_PRODUCT_ID, E2E_PRODUCT_NAME, E2E_GUEST_ORDER_PASSWORD
+appId: kr.sirsoft.gnuboard5
+tags:
+  - p1d
+  - payment
+  - toss-mock
+---
+- runFlow: ../subflows/launch-fresh.yaml
+- runFlow:
+    file: ../subflows/guest-checkout.yaml
+    env:
+      PRODUCT_ID: ${E2E_PRODUCT_ID}
+      PRODUCT_NAME: ${E2E_PRODUCT_NAME}
+      METHOD: card
+      GUEST_PASSWORD: ${E2E_GUEST_ORDER_PASSWORD}
+- tapOn:
+    id: 'checkout-submit'
+# 'returned' 저장 뒤 confirm 전 대기 중 — 여기서 강제 종료
+- extendedWaitUntil:
+    visible:
+      id: 'payment-run'
+    timeout: 20000
+- waitForAnimationToEnd:
+    timeout: 3000
+- stopApp
+- launchApp:
+    permissions:
+      notifications: allow
+# 사용자 판단이 필요 없는 결과이므로 시트는 뜨지 않는다 → 장바구니 복원 확인
+- extendedWaitUntil:
+    visible:
+      id: 'tab-CartTab'
+    timeout: 180000
+- runFlow: ../subflows/dismiss-popups.yaml
+- extendedWaitUntil:
+    notVisible:
+      id: 'payment-recovery-sheet'
+    timeout: 30000
+- tapOn:
+    id: 'tab-ShopTab'
+- tapOn:
+    id: 'tab-CartTab'
+- extendedWaitUntil:
+    visible:
+      id: 'cart-list'
+    timeout: 30000
+- assertVisible:
+    text: '.*${E2E_PRODUCT_NAME}.*'

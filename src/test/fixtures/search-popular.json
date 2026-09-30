@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": [
+    {
+      "pp_word": "a",
+      "cnt": 1
+    },
+    {
+      "pp_word": "test",
+      "cnt": 1
+    }
+  ]
+}

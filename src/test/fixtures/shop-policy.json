@@ -1,0 +1,35 @@
+{
+  "success": true,
+  "data": {
+    "delivery_company": "우체국",
+    "send_cost_case": "차등",
+    "send_cost_limit": "20000;30000;40000",
+    "send_cost_list": "1000;3000;2000",
+    "shipping_rules": [
+      {
+        "limit": 20000,
+        "cost": 1000
+      },
+      {
+        "limit": 30000,
+        "cost": 3000
+      },
+      {
+        "limit": 40000,
+        "cost": 2000
+      }
+    ],
+    "base_shipping_cost": 1000,
+    "free_threshold": 40000,
+    "delivery_content": "<div><b>배송 안내 입력전입니다.</b></div><div><b></b><b style=\"line-height:1.5;\">배송 안내 입력전입니다.</b></div><div><b style=\"line-height:1.5;\"></b><b style=\"line-height:1.5;\">배송 안내 입력전입니다.</b><b style=\"line-height:1.5;\">​</b></div><div><b style=\"line-height:1.5;\"></b><b style=\"line-height:1.5;\">배송 안내 입력전입니다.</b><b style=\"line-height:1.5;\">​</b></div><div><b style=\"line-height:1.5;\">​</b></div>",
+    "delivery_content_text": "배송 안내 입력전입니다.배송 안내 입력전입니다.배송 안내 입력전입니다.​배송 안내 입력전입니다.​​",
+    "exchange_content": "<div><b>교환/반품 안내 입력전입니다.</b></div><div><b></b><b style=\"line-height:1.5;\">교환/반품 안내 입력전입니다.</b></div><div><b style=\"line-height:1.5;\"></b><b style=\"line-height:1.5;\">교환/반품 안내 입력전입니다.</b><b style=\"line-height:1.5;\">​</b></div><div><b style=\"line-height:1.5;\"></b><b style=\"line-height:1.5;\">교환/반품 안내 입력전입니다.</b><b style=\"line-height:1.5;\">​</b></div><div><b style=\"line-height:1.5;\"></b><b style=\"line-height:1.5;\">교환/반품 안내 입력전입니다.</b><b style=\"line-height:1.5;\">​</b></div><div><b style=\"line-height:1.5;\"></b><b style=\"line-height:1.5;\">교환/반품 안내 입력전입니다.</b><b style=\"line-height:1.5;\">​​</b></div>",
+    "exchange_content_text": "교환/반품 안내 입력전입니다.교환/반품 안내 입력전입니다.교환/반품 안내 입력전입니다.​교환/반품 안내 입력전입니다.​교환/반품 안내 입력전입니다.​교환/반품 안내 입력전입니다.​​",
+    "review_requires_completed_order": false,
+    "review_requires_moderation": false,
+    "point_use_enabled": true,
+    "settle_min_point": 5000,
+    "settle_max_point": 50000,
+    "settle_point_unit": 100
+  }
+}

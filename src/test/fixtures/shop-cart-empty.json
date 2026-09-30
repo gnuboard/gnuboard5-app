@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "data": {
+    "cart_id": "2026092406003527",
+    "items": [],
+    "total_price": 0,
+    "total_qty": 0,
+    "cart_coupon": 0,
+    "send_cost": 0,
+    "shipping_cost": 0
+  }
+}

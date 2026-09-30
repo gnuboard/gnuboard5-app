@@ -1,0 +1,21 @@
+# 네이티브 Alert 의 확인(마지막) 버튼을 누른다.
+# Android: RN Alert 의 마지막 버튼은 positive(android:id/button1) — 배경 화면에 같은 글자(예: '로그아웃' 행)가 있어도 헷갈리지 않는다.
+# iOS: 버튼 글자로 누른다(BUTTON_TEXT).
+appId: kr.sirsoft.gnuboard5
+---
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: 'android:id/button1'
+          timeout: 10000
+      - tapOn:
+          id: 'android:id/button1'
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn:
+          text: ${BUTTON_TEXT}

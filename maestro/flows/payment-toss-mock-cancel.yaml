@@ -1,0 +1,29 @@
+# T-P1D-12: Toss SDK 목(취소) — 게스트 카드 주문 → 위젯 없이 USER_CANCEL → 결제 취소 안내 → 주문서(서버 초안 취소).
+# 실행: EXPO_PUBLIC_TOSS_MOCK=cancel 로 띄운 Metro(개발 빌드) — README '결제 목 흐름'. 기본 스위트에서는 제외(toss-mock 태그).
+# env: E2E_PRODUCT_ID, E2E_PRODUCT_NAME, E2E_GUEST_ORDER_PASSWORD
+appId: kr.sirsoft.gnuboard5
+tags:
+  - p1d
+  - payment
+  - toss-mock
+---
+- runFlow: ../subflows/launch-fresh.yaml
+- runFlow:
+    file: ../subflows/guest-checkout.yaml
+    env:
+      PRODUCT_ID: ${E2E_PRODUCT_ID}
+      PRODUCT_NAME: ${E2E_PRODUCT_NAME}
+      METHOD: card
+      GUEST_PASSWORD: ${E2E_GUEST_ORDER_PASSWORD}
+- tapOn:
+    id: 'checkout-submit'
+- extendedWaitUntil:
+    visible:
+      text: '결제를 취소했어요'
+    timeout: 30000
+- assertNotVisible:
+    id: 'toss-payment'
+- extendedWaitUntil:
+    visible:
+      id: 'checkout-form'
+    timeout: 20000

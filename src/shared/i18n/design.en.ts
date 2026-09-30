@@ -1,0 +1,26 @@
+/** en Claude Design v2 적용(서랍·글 읽기) 문구 — 본 사전(en.ts)이 800줄을 넘지 않도록 나눈다. */
+export const designEn: Record<string, string> = {
+  'menu.community_search': 'Search boards and posts',
+  'menu.shop_search': 'Search products',
+  'menu.points_short': '{point}P',
+  'menu.guest_hint_community': 'Log in to use messages, scraps, and points',
+  'menu.guest_hint_shop': 'Log in to see orders, wishlist, and coupons',
+  'board.detail_stats': 'Views {hit} · Comments {comments} · Likes {good}',
+  'board.recommend_short': 'Like {n}',
+  'board.not_recommend_short': 'Dislike {n}',
+  'board.prev_label': 'Previous',
+  'board.next_label': 'Next',
+  'shop.badge_new': 'NEW',
+  'shop.review_link': '{count} reviews',
+  'checkout.items_title': 'Items',
+  'checkout.items_count': '{count}',
+  'checkout.item_qty': 'Qty {qty}',
+  'checkout.summary_title': 'Payment amount',
+  'checkout.agree_title': 'Agreements',
+  'offline.banner': 'You are offline. Showing the last content we received.',
+  'web.app_only_title': 'Available in the app',
+  'web.app_only_body':
+    'Payments, identity verification and address search are not available in the web demo. Please install the app.',
+  'web.checkout_blocked': 'You cannot pay in the web demo. Please install the app to order.',
+  'settings.app_version': 'App version',
+};

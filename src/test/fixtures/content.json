@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "data": {
+    "co_id": "01_01",
+    "co_subject": "회사소개",
+    "co_content": "<p>...</p>",
+    "co_seo_title": "회사소개-1",
+    "co_mobile_content": "",
+    "co_html": 1,
+    "co_skin": "basic"
+  }
+}

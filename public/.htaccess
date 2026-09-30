@@ -1,0 +1,21 @@
+# 웹 데모(Expo 웹 한 장짜리 앱) — 이 폴더 안에서 파일이 없는 주소(/demo/cart, /demo/post/free/1 …)는
+# index.html 로 돌려 앱이 주소를 읽게 한다. 상위 폴더(그누보드)의 rewrite 규칙은 이 폴더에 적용되지 않는다.
+Options -Indexes
+DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# index.html 은 늘 새로 받고, 번들·글꼴은 7일 캐시한다(번들 이름에는 해시가 붙는다).
+<IfModule mod_headers.c>
+  <FilesMatch "index\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(js|woff2|ttf|png)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+</IfModule>

@@ -1,0 +1,242 @@
+# T-P1B-12 (PLAN §2.3 종료 기준 3, §7.4): 로그인 → 글쓰기 → 댓글 → (다른 회원) 추천 → 신고 → 차단 → 차단 해제(정리).
+# 그누보드는 자기 글 추천을 막고 앱은 자기 글에 신고·차단 메뉴를 숨기므로, 작성은 E2E_USER, 추천·신고·차단은 E2E_USER2 가 한다.
+# env: E2E_USER, E2E_PASSWORD, E2E_USER2, E2E_PASSWORD2, E2E_BOARD(기본 free — 분류·필수 옵션 없는 게시판)
+# 제외(README '미포함' 참고): 이미지 첨부(시스템 사진 선택기), 신고 3건 → auto_hidden(신고 계정 3개 + 작성자 1개 필요).
+appId: kr.sirsoft.gnuboard5
+tags:
+  - p1b
+  - community
+env:
+  E2E_BOARD: ${E2E_BOARD || 'free'}
+---
+- evalScript: ${output.postSubject = 'E2E post ' + Date.now()}
+- evalScript: ${output.commentText = 'E2E comment ' + Date.now()}
+
+- runFlow: ../subflows/launch-fresh.yaml
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      USERNAME: ${E2E_USER}
+      PASSWORD: ${E2E_PASSWORD}
+
+# ── 작성자: 커뮤니티 탭 → 게시판 → 새 글 ──
+# 로그인 직후에는 화면 전환 중이라 탭 한 번이 먹히지 않을 때가 있다 — 게시판 목록이 보일 때까지 다시 누른다.
+- repeat:
+    while:
+      notVisible:
+        id: 'boards-list'
+    times: 5
+    commands:
+      - tapOn:
+          id: 'tab-HomeTab'
+      - waitForAnimationToEnd:
+          timeout: 3000
+      - tapOn:
+          id: 'tab-CommunityTab'
+      - tapOn:
+          id: 'menu-all-boards'
+      - waitForAnimationToEnd:
+          timeout: 3000
+- extendedWaitUntil:
+    visible:
+      id: 'boards-list'
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: 'board-row-${E2E_BOARD}'
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: 'board-row-${E2E_BOARD}'
+- extendedWaitUntil:
+    visible:
+      id: 'post-compose-button'
+    timeout: 20000
+- tapOn:
+    id: 'post-compose-button'
+- extendedWaitUntil:
+    visible:
+      id: 'compose-subject'
+    timeout: 20000
+- tapOn:
+    id: 'compose-subject'
+- inputText: ${output.postSubject}
+- tapOn:
+    id: 'compose-content'
+- inputText: 'Maestro E2E body'
+# 저장은 제목줄 오른쪽이라 키보드에 가리지 않는다 — hideKeyboard 는 키보드가 이미 없으면 '뒤로'가 되어 글쓰기를 닫는다.
+- tapOn:
+    id: 'compose-submit'
+# 저장 성공 → PostDetail 로 replace
+- extendedWaitUntil:
+    visible:
+      id: 'post-detail-screen'
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: 'post-subject'
+    timeout: 15000
+- assertVisible:
+    id: 'post-subject'
+    text: '.*${output.postSubject}.*'
+
+# ── 작성자: 댓글 (하단 작업 바의 '댓글'을 눌러 입력을 연다) ──
+- tapOn:
+    id: 'post-comment-open'
+- tapOn:
+    id: 'comment-input'
+- inputText: ${output.commentText}
+# 등록 버튼은 키보드 위 입력창 아랫줄에 있다 — hideKeyboard 는 키보드가 없으면 '뒤로'가 되어 글 상세를 닫는다.
+- tapOn:
+    id: 'comment-submit'
+- scrollUntilVisible:
+    element:
+      text: '.*${output.commentText}.*'
+    direction: DOWN
+    timeout: 20000
+
+# 작성자 → 탭 루트로 돌아가 로그아웃
+- back
+- back
+- runFlow: ../subflows/logout.yaml
+
+# ── 다른 회원: 같은 글 열기 ──
+- runFlow:
+    file: ../subflows/login.yaml
+    env:
+      USERNAME: ${E2E_USER2}
+      PASSWORD: ${E2E_PASSWORD2}
+# 로그인 직후에는 화면 전환 중이라 탭 한 번이 먹히지 않을 때가 있다 — 게시판 목록이 보일 때까지 다시 누른다.
+- repeat:
+    while:
+      notVisible:
+        id: 'boards-list'
+    times: 5
+    commands:
+      - tapOn:
+          id: 'tab-HomeTab'
+      - waitForAnimationToEnd:
+          timeout: 3000
+      - tapOn:
+          id: 'tab-CommunityTab'
+      - tapOn:
+          id: 'menu-all-boards'
+      - waitForAnimationToEnd:
+          timeout: 3000
+- extendedWaitUntil:
+    visible:
+      id: 'boards-list'
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: 'board-row-${E2E_BOARD}'
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: 'board-row-${E2E_BOARD}'
+- extendedWaitUntil:
+    visible:
+      id: 'post-list'
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: '.*${output.postSubject}.*'
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    text: '.*${output.postSubject}.*'
+- extendedWaitUntil:
+    visible:
+      id: 'post-detail-screen'
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      text: '.*${output.commentText}.*'
+    direction: DOWN
+    timeout: 20000
+
+# 추천
+- scrollUntilVisible:
+    element:
+      id: 'post-vote-good'
+    direction: UP
+    timeout: 15000
+- tapOn:
+    id: 'post-vote-good'
+- extendedWaitUntil:
+    visible:
+      text: '반영했어요'
+    timeout: 10000
+
+# 신고(글 '더보기' 시트 → 신고 → 사유 칩 → 신고하기)
+- tapOn:
+    id: 'post-more'
+- tapOn:
+    text: '신고'
+- extendedWaitUntil:
+    visible:
+      id: 'report-sheet'
+    timeout: 10000
+- tapOn:
+    id: 'report-reason-spam'
+- tapOn:
+    id: 'report-submit'
+- extendedWaitUntil:
+    visible:
+      text: '신고가 접수되었.*|이미 신고하셨습니다\.'
+    timeout: 15000
+
+# 차단(글 '더보기' 시트 → 작성자 차단 → 확인)
+- tapOn:
+    id: 'post-more'
+- tapOn:
+    text: '작성자 차단'
+- runFlow:
+    file: ../subflows/confirm-dialog.yaml
+    env:
+      BUTTON_TEXT: '차단'
+- extendedWaitUntil:
+    visible:
+      text: '.*님을 차단했습니다\.'
+    timeout: 10000
+
+# ── 정리: 차단 해제(다음 실행에서 E2E_USER2 가 작성자 글을 다시 볼 수 있게) → 로그아웃 ──
+- back
+- back
+- tapOn:
+    id: 'tab-MyTab'
+- tapOn:
+    id: 'menu-my-settings'
+- scrollUntilVisible:
+    element:
+      id: 'settings-blocked'
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: 'settings-blocked'
+- extendedWaitUntil:
+    visible:
+      id: 'blocked-users-screen'
+    timeout: 15000
+- repeat:
+    while:
+      visible:
+        id: 'unblock-.*'
+    times: 5
+    commands:
+      - tapOn:
+          id: 'unblock-.*'
+          index: 0
+      - runFlow:
+          file: ../subflows/confirm-dialog.yaml
+          env:
+            BUTTON_TEXT: '해제'
+      # 해제 뒤 목록이 다시 그려질 때까지 기다린다 — 사라지는 줄을 다시 누르려다 실패하지 않게.
+      - waitForAnimationToEnd:
+          timeout: 5000
+- extendedWaitUntil:
+    visible:
+      id: 'blocked-empty'
+    timeout: 15000
+- back
+- runFlow: ../subflows/logout.yaml

@@ -1,0 +1,8 @@
+node_modules
+android
+ios
+coverage
+.expo
+docs/legacy-dday
+package-lock.json
+*.md

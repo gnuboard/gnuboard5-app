@@ -1,0 +1,247 @@
+{
+  "success": true,
+  "data": {
+    "po_id": 120,
+    "po_subject": "오늘 칼퇴할까 말까",
+    "po_etc": "",
+    "po_level": 1,
+    "po_point": 300,
+    "po_date": "2025-07-10",
+    "po_use": 1,
+    "is_active": true,
+    "options": [
+      {
+        "num": 1,
+        "content": "칼퇴하자",
+        "count": 137,
+        "rate": 72.49,
+        "bar": 100
+      },
+      {
+        "num": 2,
+        "content": "야근하자",
+        "count": 52,
+        "rate": 27.51,
+        "bar": 38
+      }
+    ],
+    "total_count": 189,
+    "has_voted": true,
+    "can_vote": false,
+    "can_view_result": true,
+    "can_comment": false,
+    "etc_comments": [],
+    "other_polls": [
+      {
+        "po_id": 120,
+        "po_subject": "오늘 칼퇴할까 말까",
+        "po_date": "2025-07-10",
+        "po_use": 1,
+        "is_current": true
+      },
+      {
+        "po_id": 119,
+        "po_subject": "오늘의 저녁 메뉴",
+        "po_date": "2025-06-23",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 118,
+        "po_subject": "집에 가고 싶다",
+        "po_date": "2025-04-14",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 117,
+        "po_subject": "aaaa",
+        "po_date": "2025-03-24",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 116,
+        "po_subject": "설문조사 테스트 입니다.",
+        "po_date": "2025-03-24",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 115,
+        "po_subject": "테스트",
+        "po_date": "2025-03-24",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 114,
+        "po_subject": "미남 투표",
+        "po_date": "2025-03-10",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 113,
+        "po_subject": "1111111111111111",
+        "po_date": "2025-03-05",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 112,
+        "po_subject": "가짜투표",
+        "po_date": "2024-12-10",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 111,
+        "po_subject": "ㅁㄴㅇㄹㅁㄴㅇㄹ",
+        "po_date": "2023-11-23",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 110,
+        "po_subject": "test",
+        "po_date": "2023-09-25",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 109,
+        "po_subject": "pqweorijpokm",
+        "po_date": "2023-07-18",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 108,
+        "po_subject": "fdfsadfas",
+        "po_date": "2023-07-18",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 107,
+        "po_subject": "최고의 국민 게임은??",
+        "po_date": "2023-01-18",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 106,
+        "po_subject": "test",
+        "po_date": "2022-12-29",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 105,
+        "po_subject": "test",
+        "po_date": "2022-12-29",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 104,
+        "po_subject": "22",
+        "po_date": "2022-12-13",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 103,
+        "po_subject": "11",
+        "po_date": "2022-12-13",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 102,
+        "po_subject": "안녕하세요오오오오오오오오오오옷",
+        "po_date": "2022-11-14",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 101,
+        "po_subject": "123",
+        "po_date": "2022-10-04",
+        "po_use": 1,
+        "is_current": false
+      },
+      {
+        "po_id": 100,
+        "po_subject": "무기명 투표합시다",
+        "po_date": "2022-09-07",
+        "po_use": 0,
+        "is_current": false
+      },
+      {
+        "po_id": 99,
+        "po_subject": "찍먹 VS 부먹",
+        "po_date": "2022-09-05",
+        "po_use": 0,
+        "is_current": false
+      },
+      {
+        "po_id": 98,
+        "po_subject": "test",
+        "po_date": "2022-08-31",
+        "po_use": 0,
+        "is_current": false
+      },
+      {
+        "po_id": 97,
+        "po_subject": "짜장면 짬뽕 중 어떤메뉴",
+        "po_date": "2022-08-02",
+        "po_use": 0,
+        "is_current": false
+      },
+      {
+        "po_id": 96,
+        "po_subject": "후즈후 베이직 상품에서 키트내용이 없나??",
+        "po_date": "2022-07-08",
+        "po_use": 0,
+        "is_current": false
+      },
+      {
+        "po_id": 95,
+        "po_subject": "최고의 국민 게임은??",
+        "po_date": "2022-06-08",
+        "po_use": 0,
+        "is_current": false
+      },
+      {
+        "po_id": 94,
+        "po_subject": "최고의 골때녀는??",
+        "po_date": "2022-06-08",
+        "po_use": 0,
+        "is_current": false
+      },
+      {
+        "po_id": 93,
+        "po_subject": "역대 한국 최고의 축구선수는? ",
+        "po_date": "2022-06-02",
+        "po_use": 0,
+        "is_current": false
+      },
+      {
+        "po_id": 92,
+        "po_subject": "고졸 아이유 재능 vs 하버드법대,의대",
+        "po_date": "2022-04-21",
+        "po_use": 0,
+        "is_current": false
+      },
+      {
+        "po_id": 91,
+        "po_subject": "fdsa",
+        "po_date": "2022-03-24",
+        "po_use": 0,
+        "is_current": false
+      }
+    ]
+  }
+}

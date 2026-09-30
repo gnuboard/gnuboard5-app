@@ -1,0 +1,20 @@
+# Maestro 워크스페이스 설정 (PLAN §7.4). 실행: `maestro test maestro` (repo 루트에서).
+# subflows/ 는 runFlow 로만 불리므로 여기 목록에 넣지 않는다.
+flows:
+  - 'flows/*'
+
+# force-update 는 EXPO_PUBLIC_E2E_SETTINGS_OVERRIDE 를 넣고 다시 빌드한(npx expo run:android) 앱에서만 녹색이 된다 — README 참고.
+excludeTags:
+  - force-update
+  # EXPO_PUBLIC_TOSS_MOCK(+ DEBUG_CONFIRM_DELAY_MS) 로 띄운 Metro 에서만 — README '결제 목 흐름'.
+  - toss-mock
+
+executionOrder:
+  continueOnFailure: false
+  # 계정 삭제는 되돌릴 수 없으므로 맨 마지막(다음 실행 전 seed_e2e_members.php 로 e2e_user4 재생성).
+  flowsOrder:
+    - auth-login-logout
+    - community-write
+    - guest-cart
+    - guest-order-bank
+    - account-delete

@@ -1,0 +1,163 @@
+[
+  {
+    "name": "board-free",
+    "method": "GET",
+    "path": "/boards/free",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.324Z"
+  },
+  {
+    "name": "boards",
+    "method": "GET",
+    "path": "/boards",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.282Z"
+  },
+  {
+    "name": "content",
+    "method": "GET",
+    "path": "/content/01_01",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.658Z"
+  },
+  {
+    "name": "faqs",
+    "method": "GET",
+    "path": "/faqs",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.684Z"
+  },
+  {
+    "name": "menus",
+    "method": "GET",
+    "path": "/menus",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.621Z"
+  },
+  {
+    "name": "poll-detail",
+    "method": "GET",
+    "path": "/polls/120",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.767Z"
+  },
+  {
+    "name": "polls",
+    "method": "GET",
+    "path": "/polls",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.720Z"
+  },
+  {
+    "name": "post-detail",
+    "method": "GET",
+    "path": "/posts/free/2166",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.392Z"
+  },
+  {
+    "name": "posts-free",
+    "method": "GET",
+    "path": "/boards/free/posts?per_page=5",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.350Z"
+  },
+  {
+    "name": "posts-latest",
+    "method": "GET",
+    "path": "/posts/latest?rows=5",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.454Z"
+  },
+  {
+    "name": "search",
+    "method": "GET",
+    "path": "/search?q=a",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.556Z"
+  },
+  {
+    "name": "search-popular",
+    "method": "GET",
+    "path": "/search/popular",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.577Z"
+  },
+  {
+    "name": "settings",
+    "method": "GET",
+    "path": "/settings",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.257Z"
+  },
+  {
+    "name": "shop-banners",
+    "method": "GET",
+    "path": "/shop/banners",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:52.126Z"
+  },
+  {
+    "name": "shop-cart-empty",
+    "method": "GET",
+    "path": "/shop/cart",
+    "status": 200,
+    "capturedAt": "2026-09-23T21:01:01.000Z"
+  },
+  {
+    "name": "shop-categories",
+    "method": "GET",
+    "path": "/shop/categories",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.827Z"
+  },
+  {
+    "name": "shop-category-products",
+    "method": "GET",
+    "path": "/shop/categories/20/products?per_page=5",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.876Z"
+  },
+  {
+    "name": "shop-payment-config",
+    "method": "GET",
+    "path": "/shop/payment/config",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:52.068Z"
+  },
+  {
+    "name": "shop-policy",
+    "method": "GET",
+    "path": "/shop/policy",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:52.028Z"
+  },
+  {
+    "name": "shop-product-detail",
+    "method": "GET",
+    "path": "/shop/products/77777",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.966Z"
+  },
+  {
+    "name": "shop-products",
+    "method": "GET",
+    "path": "/shop/products?per_page=5",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:51.922Z"
+  },
+  {
+    "name": "shop-qna",
+    "method": "GET",
+    "path": "/shop/reviews/qna?per_page=5",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:52.236Z"
+  },
+  {
+    "name": "shop-reviews",
+    "method": "GET",
+    "path": "/shop/reviews?per_page=5",
+    "status": 200,
+    "capturedAt": "2026-09-16T10:02:52.176Z"
+  }
+]

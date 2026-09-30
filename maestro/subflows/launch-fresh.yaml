@@ -1,0 +1,23 @@
+# 앱 데이터를 지우고 새로 실행 → 온보딩 건너뛰기 → 홈 팝업 닫기 → 5탭 셸 확인.
+# 알림 권한은 미리 허용해 첫 로그인·첫 주문 뒤의 시스템 권한 다이얼로그가 흐름을 막지 않게 한다.
+appId: kr.sirsoft.gnuboard5
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+    permissions:
+      notifications: allow
+# 디버그 빌드는 clearState 뒤 첫 JS 기동(Metro 에서 지연 모듈을 받는다)에 1~2분 걸리기도 한다 — 넉넉히 기다린다.
+- extendedWaitUntil:
+    visible:
+      id: 'onboarding-skip'
+    timeout: 180000
+    optional: true
+- tapOn:
+    id: 'onboarding-skip'
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: 'tab-HomeTab'
+    timeout: 30000
+- runFlow: dismiss-popups.yaml

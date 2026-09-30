@@ -1,0 +1,79 @@
+# CI (PLAN T-P0-04) — 호스팅 러너에서 실행 가능한 검사만 담는다.
+# 2026-09-22: GitHub Actions 가 계정 결제 보류로 시작되지 않아 자동 트리거(push/pull_request)를 끄고 수동(workflow_dispatch)만 남긴다.
+# 같은 검사는 로컬에서 매 작업마다 실행한다(npm run typecheck/lint/format:check, npx jest --coverage, npx expo-doctor,
+# node scripts/check-store-readiness.js). 결제가 풀리면 아래 트리거를 복원한다.
+# dev API(localhost/LAN)에 붙는 계약 테스트·fixture 검사는 셀프호스티드 러너 또는 scripts/contract-nightly.ps1 (T-P0-14).
+name: ci
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  # pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check:
+    name: typecheck · lint · test · doctor · store-readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+      # 스토어 준비 점검이 폴백 상수가 아닌 값을 보도록 — 실제 스토어 빌드는 sync-app-name 결과를 쓴다.
+      EXPO_PUBLIC_APP_NAME: 그누보드5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint (0 errors; legacy warnings are tracked in config/lint.config.cjs LEGACY_PORTED)
+        run: npm run lint -- --max-warnings=1000
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Test with coverage gate (80% global)
+        run: npx jest --coverage --ci --silent
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/lcov.info
+          retention-days: 14
+
+      - name: Coverage comment
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'coverage/coverage-summary.json';
+            if (!fs.existsSync(path)) return;
+            const { total } = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const row = (k) => `| ${k} | ${total[k].pct}% (${total[k].covered}/${total[k].total}) |`;
+            const body = ['### Coverage', '| metric | value |', '|---|---|', row('lines'), row('statements'), row('branches'), row('functions')].join('\n');
+            await github.rest.issues.createComment({ ...context.repo, issue_number: context.issue.number, body });
+
+      - name: expo-doctor
+        run: npx expo-doctor
+
+      - name: Store readiness (read-only config check)
+        run: node scripts/check-store-readiness.js

@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "data": {
+    "pg_service": "toss",
+    "client": {
+      "client_key": "[masked]"
+    },
+    "payment_methods": {
+      "card": true,
+      "vbank": true,
+      "bank": true,
+      "iche": true,
+      "hp": true,
+      "easy_pay": true,
+      "kakaopay": false
+    },
+    "easy_pay_services": ["nhnkcp_payco", "nhnkcp_naverpay", "nhnkcp_kakaopay", "nhnkcp_applepay"],
+    "bank_accounts": ["[masked]", "[masked]"],
+    "is_test_mode": true
+  }
+}

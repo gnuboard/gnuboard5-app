@@ -1,0 +1,44 @@
+# 쇼핑 탭 → 카테고리 서랍의 검색 칸 → 추천어에서 상품 열기 → 장바구니 담기(토스트 확인). 끝나면 상품 상세 화면에 머문다.
+# env: PRODUCT_ID(it_id), PRODUCT_NAME(검색어 — 필수 옵션이 없는 단품, ASCII 이름 권장: Android inputText 는 한글 미지원).
+appId: kr.sirsoft.gnuboard5
+---
+- tapOn:
+    id: 'tab-ShopTab'
+# 상품 검색은 카테고리 서랍 맨 위 검색 칸에 있다.
+- extendedWaitUntil:
+    visible:
+      id: 'tab-Categories'
+    timeout: 20000
+- tapOn:
+    id: 'tab-Categories'
+- tapOn:
+    id: 'menu-shop-search'
+- extendedWaitUntil:
+    visible:
+      id: 'shop-search-input'
+    timeout: 10000
+- tapOn:
+    id: 'shop-search-input'
+- inputText: ${PRODUCT_NAME}
+- extendedWaitUntil:
+    visible:
+      id: 'shop-suggest-${PRODUCT_ID}'
+    timeout: 15000
+# hideKeyboard 는 키보드가 이미 내려가 있으면 '뒤로'가 되어 검색 화면을 닫는다 — 키보드가 떠 있어도 추천어는 누를 수 있다.
+- tapOn:
+    id: 'shop-suggest-${PRODUCT_ID}'
+- extendedWaitUntil:
+    visible:
+      id: 'product-detail'
+    timeout: 20000
+- scrollUntilVisible:
+    element:
+      id: 'add-to-cart'
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: 'add-to-cart'
+- extendedWaitUntil:
+    visible:
+      text: '장바구니에 담았어요'
+    timeout: 10000
