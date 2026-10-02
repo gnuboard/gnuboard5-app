@@ -25,9 +25,10 @@ import {
 } from '../queries';
 import { COLORS, RADIUS, SPACING, TYPO, useColors } from '../../../shared/ui/tokens/theme';
 import { t } from '../../../shared/i18n';
-import { NotificationCard } from './NotificationCard';
+import { NotificationCard, type NotificationCardAction } from './NotificationCard';
 import type { RootStackParamList } from '../../../navigation/types';
 import { errorMessage } from '../../../shared/lib/errors';
+import { openAdminOrder } from '../adminOrderLink';
 import { routeForNotificationData } from '../tapRouter';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Notifications'>;
@@ -76,6 +77,21 @@ export function NotificationsScreen({ navigation }: Props) {
     if (route?.name === 'QaDetail') navigation.navigate(route.name, route.params);
     else if (route?.name === 'PostDetail') navigation.navigate(route.name, route.params);
     else if (route?.name === 'OrderDetail') navigation.navigate(route.name, route.params);
+    // 관리자 새 주문은 카드 아래 "관리자 주문서 보기" 버튼으로만 연다(adminOrderAction).
+  };
+
+  /** 관리자 새 주문 알림에만 붙는 버튼 — 읽음 처리하고 관리자 주문서를 브라우저로 연다. */
+  const adminOrderAction = (item: NotificationItem): NotificationCardAction | undefined => {
+    const route = routeForNotificationData(item.nt_data);
+    if (route?.name !== 'AdminOrder') return undefined;
+    return {
+      label: t('notification.admin_order_open'),
+      testID: `notification-admin-order-${item.nt_id}`,
+      onPress: () => {
+        if (!item.is_read) markAsRead.mutate({ nt_id: item.nt_id });
+        void openAdminOrder(route.params.odId);
+      },
+    };
   };
 
   const onItemDelete = async (item: NotificationItem) => {
@@ -234,6 +250,7 @@ export function NotificationsScreen({ navigation }: Props) {
               disabled={deletePendingId !== null}
               onPress={() => onItemPress(item)}
               onLongPress={() => onItemDelete(item)}
+              action={adminOrderAction(item)}
             />
           )}
         />

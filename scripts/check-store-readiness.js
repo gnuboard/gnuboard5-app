@@ -5,13 +5,15 @@
  *
  * - 앱 리포 밖(그누보드 서버 트리)에 의존하지 않는다. 서버 측 조건(법적 페이지·assetlinks·AASA)은
  *   `--prod-urls` 로 HTTP 읽기 전용 검사만 한다 (T-P0-04/T-P3A-05 에서 확장).
- * - 식별자는 src/config/appIds.ts 를 정본으로 읽고, 실제 Expo 설정은 `expo config --json` 결과와 대조한다.
+ * - 식별자는 brand.json 을 정본으로 읽고, 실제 Expo 설정은 `expo config --json` 결과와 대조한다.
+ * - 내 앱으로 출시할 때 공식 그누보드5 앱 ID·스킴·G5 로고가 남아 있으면 경고(--strict 에서는 실패) — docs/MY-APP.md.
  */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { OFFICIAL_RELEASE_ENV, brandFindings, iconStampFindings, loadBrand } = require('./lib/brand');
 
 const appRoot = path.resolve(__dirname, '..');
 const strict = process.argv.includes('--strict');
@@ -25,15 +27,22 @@ function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
-/** src/config/appIds.ts 의 리터럴 상수를 읽는다 (TS 를 실행하지 않고 정규식으로). */
-function readAppIds() {
-  const source = fs.readFileSync(path.join(appRoot, 'src/config/appIds.ts'), 'utf8');
-  const pick = (name) => {
-    const match = source.match(new RegExp(`export const ${name} = '([^']+)';`));
-    if (!match) throw new Error(`appIds.ts: cannot find ${name}`);
-    return match[1];
-  };
-  return { package: pick('APP_PACKAGE'), scheme: pick('APP_SCHEME'), linkHost: pick('APP_LINK_HOST') };
+/** 앱 식별자 — 정본은 brand.json(scripts/lib/brand.js 가 검사한다). */
+function readAppIds(brand) {
+  return { package: brand.package, scheme: brand.scheme, linkHost: brand.siteHost };
+}
+
+/** 내 앱 브랜드: 예시 도메인이거나 공식 앱 ID·스킴·G5 로고를 그대로 쓰면 경고(공식 출시 빌드는 G5_OFFICIAL_RELEASE=1). */
+function checkBrand(brand) {
+  const easJson = readJson(path.join(appRoot, 'eas.json'));
+  const production = (easJson.build && easJson.build.production) || {};
+  results.push(
+    ...brandFindings(brand, {
+      officialRelease: process.env[OFFICIAL_RELEASE_ENV] === '1',
+      productionApiUrl: (production.env && production.env.EXPO_PUBLIC_API_URL) || '',
+    }),
+    ...iconStampFindings(brand, appRoot),
+  );
 }
 
 function readExpoConfig() {
@@ -66,9 +75,11 @@ function checkIdentifiers(config, ids) {
   else fail(`iOS associatedDomains is missing applinks:${ids.linkHost}.`);
 }
 
-function checkAppName(config) {
+function checkAppName(config, brand) {
   const fromEnv = (process.env.EXPO_PUBLIC_APP_NAME || '').trim();
   if (fromEnv) ok(`App display name comes from EXPO_PUBLIC_APP_NAME ("${config.name}").`);
+  // expo config 는 .env 를 읽으므로 .env 에 적은 이름이면 config.name 이 brand.json 폴백과 다르다.
+  else if (config.name && config.name !== brand.appName) ok(`App display name comes from .env ("${config.name}").`);
   else
     warn(
       'EXPO_PUBLIC_APP_NAME is not set — run `npm run sync:app-name` before a store build (name is the fallback constant).',
@@ -170,10 +181,12 @@ function queriesSchemeFindings(config, ids) {
 }
 
 function run() {
-  const ids = readAppIds();
+  const brand = loadBrand(appRoot);
+  const ids = readAppIds(brand);
+  checkBrand(brand);
   const config = readExpoConfig();
   checkIdentifiers(config, ids);
-  checkAppName(config);
+  checkAppName(config, brand);
   checkEas(config);
   checkStoreUrls(config, ids);
   results.push(

@@ -7,6 +7,14 @@
 - 회원: 로그인·가입·소셜 로그인·본인인증·프로필·탈퇴
 - 다크 모드, 한국어/영어, 브라우저에서 둘러보는 [웹 데모](docs/web-demo.md)
 
+## 웹 데모
+
+설치 없이 브라우저에서 둘러볼 수 있습니다 (같은 코드로 만든 Expo 웹 빌드):
+**https://thisgun3.mycafe24.com/demo/**
+
+- 결제·본인인증·주소 찾기는 웹 데모에서 동작하지 않습니다. 앱을 설치해 이용하세요.
+- 시험용 사이트라 글·회원 데이터가 예고 없이 지워질 수 있습니다.
+
 ## 먼저 필요한 것
 
 이 저장소는 **앱만** 담고 있습니다. 앱은 그누보드5(영카트5) 사이트에 설치하는 REST API(`/api/v1`)와 통신하므로,
@@ -31,15 +39,19 @@ Expo Go 로는 실행하지 않습니다(iOS 에서 다른 앱과 쿠키 저장�
 
 ## 내 사이트용으로 빌드하기
 
-앱 ID·사이트 주소 같은 기본값을 내 사이트에 맞게 바꿉니다.
+받은 그대로의 앱 ID·스킴·G5 로고는 **공식 그누보드5 앱** 것이라 그대로는 스토어에 올릴 수 없습니다.
+스토어 정책(내 계정으로 제출, 내 브랜드 사용)과 바꾸는 순서는 **[docs/MY-APP.md](docs/MY-APP.md)** 에 있습니다.
 
 | 무엇 | 어디 |
 |---|---|
-| 앱 ID(패키지명)·딥링크 스킴·사이트 호스트 | [src/config/appIds.ts](src/config/appIds.ts) 와 [app.config.ts](app.config.ts) 위쪽 상수 (두 곳이 같아야 한다 — `appIds.test.ts` 가 확인) |
+| 앱 ID(패키지명)·딥링크 스킴·사이트 도메인·로고·아이콘 색 | [brand.json](brand.json) 한 파일 — 틀리면 `expo start`·빌드가 무엇을 고칠지 알려 주고 멈춘다 |
+| 아이콘·스플래시 | `brand.json` 의 `logo` 에 투명 배경 PNG·SVG 를 적고 `npm run icons` |
 | API 주소 | `.env` 의 `EXPO_PUBLIC_API_URL`, 스토어 빌드는 [eas.json](eas.json) 의 `env` |
 | 앱 이름 | 빌드 전에 `npm run sync:app-name -- --api <API 주소>` — 사이트 관리자 설정의 사이트 제목(`cf_title`)을 가져온다 |
-| 아이콘·스플래시 | [scripts/generate-icons.mjs](scripts/generate-icons.mjs) 의 마크를 바꾼 뒤 `npm run icons` |
+| 사이트 설정 | 사이트 `api/.env` 에 `G5_SOCIAL_MOBILE_SCHEMES=내스킴` (소셜 로그인·결제 복귀) |
 | EAS·Sentry | `.env.example` 의 `EXPO_PUBLIC_EAS_*`, `EXPO_PUBLIC_SENTRY_*` |
+
+다 바꿨으면 `npm run store:check -- --strict` 로 공식 앱 것이 남아 있지 않은지 확인합니다.
 
 ## 명령
 
@@ -47,7 +59,7 @@ Expo Go 로는 실행하지 않습니다(iOS 에서 다른 앱과 쿠키 저장�
 |---|---|
 | `npm run check` | 타입 검사 + lint + 테스트 |
 | `npm test` / `npm run test:coverage` | 단위·통합 테스트 (jest) |
-| `npm run icons` | 앱 아이콘 세트 생성 |
+| `npm run icons` | 앱 아이콘 세트 생성 (`brand.json` 의 `logo`) |
 | `npm run web:demo` | 웹 데모 내보내기 (`dist-web/`) |
 | `npm run sync:app-name -- --api <API>` | 사이트 제목을 앱 이름으로 동기화 |
 | `npm run contract:test` | 서버 API 계약 테스트 (개발 서버 대상) |
@@ -57,6 +69,7 @@ E2E 테스트는 [maestro/README.md](maestro/README.md) 를 보세요.
 
 ## 문서
 
+- [docs/MY-APP.md](docs/MY-APP.md) — 내 사이트 앱으로 바꿔 스토어에 출시하기
 - [docs/web-demo.md](docs/web-demo.md) — 웹 데모 만들고 올리기
 - 서버 API 문서는 [gnuboard/gnuboard5-nextjs](https://github.com/gnuboard/gnuboard5-nextjs) 에 있습니다.
 

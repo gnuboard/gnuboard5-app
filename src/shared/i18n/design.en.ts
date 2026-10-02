@@ -28,4 +28,11 @@ export const designEn: Record<string, string> = {
   'board.attach_source_file': 'File (documents, archives)',
   'board.file_type_not_allowed_title': 'This file type is not allowed',
   'board.file_type_not_allowed_message': 'Allowed types: {exts}',
+  'profile.photo_change': 'Change photo',
+  'profile.photo_remove': 'Remove photo',
+  'profile.photo_remove_confirm': 'Remove your profile photo?',
+  'profile.photo_hint': 'It is resized to {width}×{height}.',
+  'profile.photo_failed': "Couldn't update your profile photo",
+  'profile.photo_too_large': "Couldn't shrink the photo below {kb}KB. Please choose another photo.",
+  'notification.admin_order_open': 'Open admin order',
 };

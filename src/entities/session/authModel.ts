@@ -13,6 +13,9 @@ export interface AuthMember {
   mb_level?: number;
   /** 보유 포인트 — 게시판 읽기 포인트 안내(T-P1B-02). 로그인/me 응답에 있을 때만. */
   mb_point?: number;
+  /** 회원이미지(프로필 사진)·회원아이콘 주소 — http(s) 만. MY 카드는 이미지 → 아이콘 → 기본 그림 순. */
+  mb_image_path?: string;
+  mb_icon_path?: string;
   is_super_admin?: boolean;
 }
 
@@ -86,6 +89,15 @@ function memberEmailString(value: unknown): string {
   return clampText(value.trim(), INPUT_LIMITS.memberEmail);
 }
 
+const MAX_IMAGE_URL_LENGTH = 2048;
+
+/** 서버가 준 이미지 주소 — http(s) 절대 주소만(그 밖의 스킴·지나치게 긴 값은 버린다). */
+function memberImageUrl(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return /^https?:\/\//i.test(trimmed) && trimmed.length <= MAX_IMAGE_URL_LENGTH ? trimmed : undefined;
+}
+
 function optionalStrictBoolean(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined;
 }
@@ -109,6 +121,10 @@ export function normalizeAuthMember(value: unknown): AuthMember | null {
   if (mbLevel !== undefined) normalized.mb_level = mbLevel;
   const mbPoint = Number(member.mb_point);
   if (Number.isSafeInteger(mbPoint)) normalized.mb_point = mbPoint;
+  const imagePath = memberImageUrl(member.mb_image_path);
+  if (imagePath) normalized.mb_image_path = imagePath;
+  const iconPath = memberImageUrl(member.mb_icon_path);
+  if (iconPath) normalized.mb_icon_path = iconPath;
   return normalized;
 }
 

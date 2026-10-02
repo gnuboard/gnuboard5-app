@@ -47,6 +47,11 @@ describe('routeForNotificationData', () => {
       { name: 'OrderDetail', params: { odId: '2026092412345678' } },
     ],
     ['broadcast with a system type', { type: 'system', source: 'broadcast' }, { name: 'Notifications' }],
+    [
+      'admin new order opens the admin order page, not the buyer order screen',
+      { type: 'admin.order.placed', od_id: '2026100112345678' },
+      { name: 'AdminOrder', params: { odId: '2026100112345678' } },
+    ],
   ])('%s', (_label, data, expected) => {
     expect(routeForNotificationData(data)).toEqual(expected);
   });

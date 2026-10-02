@@ -2,7 +2,7 @@
 /**
  * 빌드 전 앱 표시 이름 동기화 (PLAN T-P0-01, ARCH §3.4 (b)).
  *
- *   node scripts/sync-app-name.mjs [--api https://gnuboard.example.com/api/v1] [--out .env.app-name]
+ *   node scripts/sync-app-name.mjs [--api https://<brand.json siteHost>/api/v1] [--out .env.app-name]
  *
  * `GET {api}/settings → data.cf_title` 을 읽어 `EXPO_PUBLIC_APP_NAME` 을 dotenv 파일에 기록한다.
  * 서버 미도달·HTTP 오류·빈 cf_title 이면 exit 1 — 잘못된 이름으로 스토어 빌드가 나가지 않게 한다.
@@ -15,8 +15,10 @@ import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
 const { fetchAppName, renderEnvFile, AppNameSyncError, ENV_KEY } = require('./lib/resolve-app-name');
+const { loadBrand } = require('./lib/brand');
 
-const DEFAULT_API = 'https://gnuboard.example.com/api/v1';
+// --api 를 빼면 brand.json 의 사이트 도메인 — 다른 사이트의 제목이 내 앱 이름으로 들어가지 않게 한다.
+const DEFAULT_API = `https://${loadBrand().siteHost}/api/v1`;
 
 function parseArgs(argv) {
   const args = { api: process.env.SYNC_APP_NAME_API || DEFAULT_API, out: '.env.app-name' };

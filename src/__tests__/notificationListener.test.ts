@@ -127,6 +127,18 @@ describe('tap handling', () => {
     expect(mockedNavigate).toHaveBeenCalledWith('PostDetail', { board: 'free', wr_id: 12, comment_id: undefined });
   });
 
+  test('an admin new-order push opens the inbox, where the card button opens the admin page', () => {
+    setupNotificationListener();
+    const response = makeResponse('route-admin');
+    (response.notification.request.content as { data: unknown }).data = {
+      type: 'admin.order.placed',
+      od_id: '2026100112345678',
+    };
+    responseHandler()(response);
+    jest.advanceTimersByTime(300);
+    expect(mockedNavigate).toHaveBeenCalledWith('Notifications');
+  });
+
   test('the same response id is handled once even if delivered twice', () => {
     setupNotificationListener();
     const handle = responseHandler();

@@ -15,6 +15,9 @@ module.exports = {
   resolver: 'react-native-worklets/jest/resolver.js',
   // jest-expo 는 'react-native' export condition 으로 해석해 msw 의 ESM 번들을 고르므로 CJS 빌드로 고정 (T-P0-08 msw).
   moduleNameMapper: {
+    // 테스트는 brand.json 대신 고정된 테스트 브랜드(공식 앱 값)로 돈다 — 내 사이트 앱으로 brand.json 을 바꿔도
+    // 앱 로직 테스트는 그대로 통과한다. 실제 brand.json 의 모양은 appIds.test.ts 가 파일을 직접 읽어 검사한다.
+    '^(\\.\\./)+brand\\.json$': '<rootDir>/src/test/brand.fixture.json',
     '^msw$': '<rootDir>/node_modules/msw/lib/core/index.js',
     '^msw/node$': '<rootDir>/node_modules/msw/lib/node/index.js',
   },

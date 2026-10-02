@@ -213,7 +213,9 @@ function openFromNotification(route: NotificationRoute | null): void {
   if (navigationTimer) clearTimeout(navigationTimer);
   navigationTimer = setTimeout(() => {
     navigationTimer = null;
-    if (route) navigate(route.name, route.params);
+    // 관리자 새 주문은 알림함으로 — 관리자 주문서는 알림함 카드의 버튼으로 연다.
+    if (route?.name === 'AdminOrder') navigate('Notifications');
+    else if (route) navigate(route.name, route.params);
     else navigate('Notifications');
   }, 300);
 }

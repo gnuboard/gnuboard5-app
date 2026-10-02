@@ -23,6 +23,8 @@ const profileSchema = z.looseObject({
   mb_addr2: text,
   mb_signature: text,
   mb_profile: text,
+  /** 회원이미지(프로필 사진) 주소 — 없으면 null. 서버가 아직 모르면(구버전) 빠진다. */
+  mb_image_path: z.string().nullable().optional().catch(null),
 });
 
 export type MyProfile = z.infer<typeof profileSchema>;

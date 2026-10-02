@@ -27,4 +27,11 @@ export const designKo: Record<string, string> = {
   'board.attach_source_file': '파일 (문서·압축)',
   'board.file_type_not_allowed_title': '올릴 수 없는 파일 형식이에요',
   'board.file_type_not_allowed_message': '올릴 수 있는 형식: {exts}',
+  'profile.photo_change': '사진 바꾸기',
+  'profile.photo_remove': '사진 지우기',
+  'profile.photo_remove_confirm': '프로필 사진을 지울까요?',
+  'profile.photo_hint': '{width}×{height} 크기로 맞춰 올라가요.',
+  'profile.photo_failed': '프로필 사진을 바꾸지 못했어요',
+  'profile.photo_too_large': '사진을 {kb}KB 이하로 줄이지 못했어요. 다른 사진을 골라 주세요.',
+  'notification.admin_order_open': '관리자 주문서 보기',
 };

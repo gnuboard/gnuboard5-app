@@ -7,14 +7,22 @@ import type { NotificationItem } from '../../../entities/notification/api';
 import { RADIUS, SHADOW, useColors, type Palette } from '../../../shared/ui/tokens/theme';
 import { t } from '../../../shared/i18n';
 
+/** 카드 아래 버튼 하나 — 관리자 새 주문 알림의 "관리자 주문서 보기" 같은, 카드를 누르는 것과 다른 동작. */
+export interface NotificationCardAction {
+  label: string;
+  onPress: () => void;
+  testID?: string;
+}
+
 interface Props {
   item: NotificationItem;
   onPress: () => void;
   onLongPress: () => void;
   disabled?: boolean;
+  action?: NotificationCardAction;
 }
 
-export function NotificationCard({ item, onPress, onLongPress, disabled = false }: Props) {
+export function NotificationCard({ item, onPress, onLongPress, disabled = false, action }: Props) {
   const colors = useColors();
   return (
     <TouchableOpacity
@@ -45,6 +53,18 @@ export function NotificationCard({ item, onPress, onLongPress, disabled = false 
         </Text>
       ) : null}
       <Text style={[s.date, { color: colors.outline }]}>{formatDate(item.nt_sent_at)}</Text>
+      {action ? (
+        <TouchableOpacity
+          style={[s.action, { borderColor: colors.primary }]}
+          onPress={action.onPress}
+          disabled={disabled}
+          accessibilityRole="button"
+          accessibilityLabel={action.label}
+          testID={action.testID}
+        >
+          <Text style={[s.actionLabel, { color: colors.primary }]}>{action.label}</Text>
+        </TouchableOpacity>
+      ) : null}
     </TouchableOpacity>
   );
 }
@@ -88,4 +108,13 @@ const s = StyleSheet.create({
   unreadDot: { width: 8, height: 8, borderRadius: 4 },
   body: { fontSize: 13, lineHeight: 19 },
   date: { fontSize: 11, fontWeight: '500', marginTop: 4 },
+  action: {
+    alignSelf: 'flex-start',
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+  },
+  actionLabel: { fontSize: 13, fontWeight: '700' },
 });

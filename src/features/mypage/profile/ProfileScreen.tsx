@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQueryClient } from '@tanstack/react-query';
+import { memberImageRules } from '../../../entities/member/media';
 import { myProfileKeys, updateMyProfile, useMyProfile, type MyProfile } from '../../../entities/member/profile';
 import { useAuth } from '../../../entities/session/AuthContext';
 import { useSettingsQuery } from '../../../entities/settings/queries';
@@ -15,6 +16,7 @@ import { FormErrorNotice, PrimaryButton, SocialField, SocialFormFrame } from '..
 import { useSubmitState } from '../../../shared/ui/form/useSubmitState';
 import { useColors } from '../../../shared/ui/tokens/theme';
 import { ProfileFields } from './ProfileFields';
+import { ProfilePhoto } from './ProfilePhoto';
 import { profileErrorMessage, profilePatch, profileVisibility, toForm, validateProfile } from './profileModel';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
@@ -59,15 +61,30 @@ function useSaveProfile(profile: MyProfile) {
   return { submit, saved, save };
 }
 
+function useRefreshProfile(): () => Promise<void> {
+  const { refreshMe } = useAuth();
+  const queryClient = useQueryClient();
+  return async () => {
+    await queryClient.invalidateQueries({ queryKey: myProfileKeys.profile });
+    await refreshMe();
+  };
+}
+
 function ProfileEditor({ profile, navigation }: { profile: MyProfile; navigation: Props['navigation'] }) {
   const colors = useColors();
   const { data: settings } = useSettingsQuery();
+  const member = useAuth().state.member;
+  const photoRules = memberImageRules(settings, member);
+  const refreshProfile = useRefreshProfile();
   const [form, setForm] = useState(() => toForm(profile));
   const [currentPassword, setCurrentPassword] = useState('');
   const { submit, saved, save } = useSaveProfile(profile);
   const emailChanged = form.mb_email.trim() !== profile.mb_email;
   return (
     <>
+      {photoRules ? (
+        <ProfilePhoto imageUrl={profile.mb_image_path ?? null} rules={photoRules} onChanged={refreshProfile} />
+      ) : null}
       {submit.message ? <FormErrorNotice message={submit.message} /> : null}
       {saved ? <Text style={[s.saved, { color: colors.primary }]}>{t('profile.saved')}</Text> : null}
       <Text style={[s.label, { color: colors.onSurface }]}>{t('profile.id_label')}</Text>

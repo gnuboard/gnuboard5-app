@@ -3,24 +3,36 @@
  *
  * - name: 빌드 전 `scripts/sync-app-name.mjs`가 프로덕션 `cf_title`을 `EXPO_PUBLIC_APP_NAME`에 기록한다(ARCH §3.4 (b)).
  *   로컬 `expo start`에서 env 가 없으면 폴백 상수를 쓴다.
- * - 식별자(패키지·스킴·호스트)는 `src/config/appIds.ts` 단일 정본에서 가져온다.
+ * - 앱 ID·스킴·사이트 도메인·이름 폴백·아이콘 색은 루트 `brand.json` 한 곳에서 읽는다(scripts/lib/brand.js 가 검사 —
+ *   틀리면 여기서 멈춘다). 앱 번들은 같은 파일을 src/config/appIds.ts 가 읽는다. 내 앱으로 바꾸기: docs/MY-APP.md.
  * - EAS projectId / updates / Sentry 는 신규 프로젝트 생성(OPS-01.3/01.5) 후 env 로 주입된다 — 비어 있으면 해당 섹션을 생략한다.
  * - Pretendard 폰트 플러그인은 T-P0-09 에서 assets/fonts 와 함께 추가한다.
  */
+import { existsSync } from 'fs';
+import { join } from 'path';
 import type { ConfigContext, ExpoConfig } from 'expo/config';
+// app.config.ts 는 Metro 밖(Node)에서 단독으로 변환·실행되므로 TS 소스 대신 JS 모듈을 쓴다.
+import { loadBrand } from './scripts/lib/brand';
 
-// app.config.ts 는 Metro 밖(Node)에서 실행되므로 TS 소스를 직접 import 하지 않고 값을 복제한다.
-// 값이 어긋나면 `src/__tests__/appIds.test.ts` 가 실패한다.
-const APP_PACKAGE = 'kr.sirsoft.gnuboard5';
-const APP_SCHEME = 'sirsoft-g5';
-const APP_LINK_HOST = 'gnuboard.example.com';
+const brand = loadBrand(__dirname);
+
+// Android 푸시(FCM) — 각 사이트의 Firebase 프로젝트 파일. git 밖에 두고(.gitignore), EAS 클라우드 빌드는
+// 파일형 환경변수 GOOGLE_SERVICES_JSON 으로 넘긴다. 없으면 빼고 빌드한다(알림 토큰만 못 받는다 — docs/MY-APP.md 4장).
+const googleServicesFile =
+  (process.env.GOOGLE_SERVICES_JSON ?? '').trim() ||
+  (existsSync(join(__dirname, 'google-services.json')) ? './google-services.json' : '');
+const APP_PACKAGE = brand.package;
+const APP_SCHEME = brand.scheme;
+const APP_LINK_HOST = brand.siteHost;
 const APP_LINK_PATH_PREFIX = '/app/';
-const APP_NAME_FALLBACK = '그누보드5';
+/** OTA 업데이트 서명 공개 인증서(docs/MY-APP.md 4장). 개인키는 certs/.generated/ — git 밖. */
+const UPDATES_CERTIFICATE = 'certs/expo-updates-certificate.pem';
 const APP_VERSION = '1.0.0';
 
-const appName = (process.env.EXPO_PUBLIC_APP_NAME ?? '').trim() || APP_NAME_FALLBACK;
-const easProjectId = (process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? '').trim();
-const easOwner = (process.env.EXPO_PUBLIC_EAS_OWNER ?? '').trim();
+const appName = (process.env.EXPO_PUBLIC_APP_NAME ?? '').trim() || brand.appName;
+// Expo 프로젝트 — brand.json 에 둔다(eas-cli 는 .env 를 읽지 않으므로). 환경변수가 있으면 그것이 우선.
+const easProjectId = (process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? '').trim() || brand.easProjectId;
+const easOwner = (process.env.EXPO_PUBLIC_EAS_OWNER ?? '').trim() || brand.easOwner;
 const sentryOrg = (process.env.EXPO_PUBLIC_SENTRY_ORG ?? '').trim();
 const sentryProject = (process.env.EXPO_PUBLIC_SENTRY_PROJECT ?? '').trim();
 const apiUrl = (process.env.EXPO_PUBLIC_API_URL ?? '').trim() || `https://${APP_LINK_HOST}/api/v1`;
@@ -73,7 +85,7 @@ const plugins: NonNullable<ExpoConfig['plugins']> = [
     {
       // 상태 표시줄 알림 아이콘은 알파만 쓰인다 — 흰색 한 색 마크(scripts/generate-icons.mjs).
       icon: './assets/notification-icon.png',
-      color: '#2F6BFF',
+      color: brand.colors.accent,
       defaultChannel: 'default',
     },
   ],
@@ -106,7 +118,7 @@ const plugins: NonNullable<ExpoConfig['plugins']> = [
       image: './assets/splash-icon.png',
       imageWidth: 200,
       resizeMode: 'contain',
-      backgroundColor: '#ffffff',
+      backgroundColor: brand.colors.splashBackground,
     },
   ],
 ];
@@ -117,7 +129,7 @@ if (sentryOrg && sentryProject) {
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: appName,
-  slug: 'gnuboard5-app',
+  slug: brand.slug,
   version: APP_VERSION,
   scheme: APP_SCHEME,
   orientation: 'portrait',
@@ -130,8 +142,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         updates: {
           url: `https://u.expo.dev/${easProjectId}`,
           fallbackToCacheTimeout: 0,
-          codeSigningCertificate: './certs/expo-updates-certificate.pem',
-          codeSigningMetadata: { alg: 'rsa-v1_5-sha256', keyid: 'main' },
+          // 인증서가 아직 없으면 서명 없이 둔다(prebuild 가 없는 파일을 읽다 멈추지 않게) — store:check 가 경고한다.
+          ...(existsSync(join(__dirname, UPDATES_CERTIFICATE))
+            ? {
+                codeSigningCertificate: `./${UPDATES_CERTIFICATE}`,
+                codeSigningMetadata: { alg: 'rsa-v1_5-sha256' as const, keyid: 'main' },
+              }
+            : {}),
         },
       }
     : {}),
@@ -166,14 +183,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     adaptiveIcon: {
-      // 아이콘 세트는 scripts/generate-icons.mjs(G5 모노그램)가 만든다. monochrome = Android 13+ 테마 아이콘.
+      // 아이콘 세트는 scripts/generate-icons.mjs 가 brand.json logo(비우면 G5 모노그램)로 만든다.
+      // monochrome = Android 13+ 테마 아이콘.
       foregroundImage: './assets/adaptive-icon.png',
       monochromeImage: './assets/adaptive-icon-monochrome.png',
-      backgroundColor: '#ffffff',
+      backgroundColor: brand.colors.iconBackground,
     },
     // edge-to-edge 는 SDK 55+ 에서 항상 켜져 있어 옵션이 사라졌다 (Android 16 / targetSdk 36 강제, RELEASE §2.1).
     predictiveBackGestureEnabled: false,
     package: APP_PACKAGE,
+    ...(googleServicesFile ? { googleServicesFile } : {}),
     versionCode: 1,
     intentFilters: [
       {

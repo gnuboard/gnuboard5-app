@@ -50,6 +50,9 @@ expo-android.*.log
 .env.app-name
 # expo-updates code-signing private key (public certificate is committed)
 certs/.generated/
+# Firebase (FCM push) config — each site's own project; EAS cloud builds get it via the GOOGLE_SERVICES_JSON file env
+google-services.json
+GoogleService-Info.plist
 # scratch
 tmp/
 coverage/

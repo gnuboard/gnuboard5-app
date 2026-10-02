@@ -1,0 +1,15 @@
+{
+  "appName": "그누보드5",
+  "package": "kr.sirsoft.gnuboard5",
+  "scheme": "sirsoft-g5",
+  "siteHost": "gnuboard.example.com",
+  "slug": "gnuboard5-app",
+  "easProjectId": "",
+  "easOwner": "",
+  "logo": "",
+  "colors": {
+    "accent": "#2f6bff",
+    "iconBackground": "#ffffff",
+    "splashBackground": "#ffffff"
+  }
+}

@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { useAuth } from '../../../entities/session/AuthContext';
 import { useFeatureFlag } from '../../../entities/settings/features';
 import type { Service } from '../../../navigation/serviceTabs';
@@ -34,6 +34,8 @@ function MemberCard({ go, navigation }: { go: Go; navigation: Navigation }) {
   const { colors } = useTheme();
   const member = useAuth().state.member;
   if (!member) return null;
+  // 회원이미지가 있으면 그것, 없으면 회원아이콘, 둘 다 없으면 기본 사람 모양.
+  const avatarUrl = member.mb_image_path ?? member.mb_icon_path ?? null;
   return (
     <Pressable
       onPress={go(() => navigation.navigate('Profile'))}
@@ -43,7 +45,11 @@ function MemberCard({ go, navigation }: { go: Go; navigation: Navigation }) {
       testID="menu-member-card"
     >
       <View style={[styles.avatar, { backgroundColor: colors.surface }]}>
-        <Ionicons name="person-outline" size={22} color={colors.onSurfaceSecondary} />
+        {avatarUrl ? (
+          <Image source={{ uri: avatarUrl }} style={styles.avatar} testID="menu-member-avatar" />
+        ) : (
+          <Ionicons name="person-outline" size={22} color={colors.onSurfaceSecondary} />
+        )}
       </View>
       <View style={styles.grow}>
         <AppText variant="cardTitle" weight="700" numberOfLines={1}>
@@ -198,6 +204,7 @@ const styles = StyleSheet.create({
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
     borderRadius: AVATAR_SIZE / 2,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },

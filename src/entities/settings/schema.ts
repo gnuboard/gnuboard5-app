@@ -25,6 +25,20 @@ export const companyInfoSchema = z.looseObject({
 });
 export type CompanyInfo = z.infer<typeof companyInfoSchema>;
 
+/** 회원아이콘·회원이미지 설정(관리자 → 기본환경) — 셋 중 하나라도 0 이면 enabled false. 용량은 바이트. */
+const memberMediaRuleSchema = z.looseObject({
+  enabled: booleanValue,
+  level: numberValue,
+  size: numberValue,
+  width: numberValue,
+  height: numberValue,
+});
+export const memberMediaSchema = z.looseObject({
+  icon: memberMediaRuleSchema.optional().catch(undefined),
+  image: memberMediaRuleSchema.optional().catch(undefined),
+});
+export type MemberMediaDto = z.infer<typeof memberMediaSchema>;
+
 export const publicSettingsSchema = z.looseObject({
   cf_title: stringValue.optional(),
   cf_use_point: numberValue.optional(),
@@ -48,5 +62,6 @@ export const publicSettingsSchema = z.looseObject({
   features: z.record(z.string(), booleanValue).optional(),
   legal_urls: z.record(z.string(), stringValue).optional(),
   company: companyInfoSchema.optional().catch(undefined),
+  member_media: memberMediaSchema.optional().catch(undefined),
 });
 export type PublicSettingsDto = z.infer<typeof publicSettingsSchema>;
