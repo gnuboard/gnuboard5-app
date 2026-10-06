@@ -27,6 +27,7 @@ import { runPgPayment } from '../features/payment/runPgPayment';
 import { checkReturned, createPgWebViewProvider, toPgPrepared } from '../features/payment/providers/pgWebView';
 import type { PendingSession } from '../features/payment/pendingSession';
 import type { LaunchResult, PreparedPayment } from '../features/payment/providers/types';
+import { ApiError } from '../shared/api/apiError';
 import { setLocale, t } from '../shared/i18n';
 import { ThemeProvider } from '../shared/ui/theme/ThemeProvider';
 import { http, HttpResponse, server } from '../test/msw/server';
@@ -272,6 +273,18 @@ describe('runPgPayment', () => {
     expect(d.provider.cancel).toHaveBeenCalledWith(prepared, 'pending_store');
   });
 
+  test('a prepare stopped by a changed cart carries the server code', async () => {
+    const d = deps({ kind: 'returned', params: {} });
+    d.provider.prepare.mockRejectedValueOnce(new ApiError('장바구니가 바뀌었습니다.', 409, { code: 'CART_CHANGED' }));
+    expect(await runPgPayment(handoff, d.run)).toEqual({
+      kind: 'failed',
+      message: '장바구니가 바뀌었습니다.',
+      code: 'CART_CHANGED',
+    });
+    expect(d.store.save).not.toHaveBeenCalled();
+    expect(d.provider.launch).not.toHaveBeenCalled();
+  });
+
   test('an unresolved payment blocks a new one and points to its order', async () => {
     const d = deps({ kind: 'returned', params: {} });
     d.store.load.mockResolvedValueOnce({
@@ -345,6 +358,29 @@ describe('PaymentRunScreen', () => {
     );
     expect(confirmBody).toMatchObject({ pg_service: 'inicis', order_id: ORDER, amount: 23000, P_TID: 'T' });
     expect(peekCheckoutHandoff(id)).toBeNull();
+  });
+
+  test('a changed cart stops before the pg and sends the buyer back to reload the checkout', async () => {
+    server.use(
+      http.post('*/api/v1/shop/payment/prepare', () =>
+        HttpResponse.json(
+          { success: false, message: '장바구니가 바뀌었습니다.', errors: { code: 'CART_CHANGED' } },
+          { status: 409 },
+        ),
+      ),
+    );
+    mockToast.mockReset();
+    const id = putCheckoutHandoff({
+      body: { payment_device: 'mobile', ct_ids: '1,2' },
+      method: 'card',
+      settleCase: '신용카드',
+      testMode: false,
+      shopName: '상점',
+    });
+    await renderRun(id);
+    await waitFor(() => expect(navigation.goBack).toHaveBeenCalled());
+    expect(mockToast).toHaveBeenCalledWith(t('checkout.cart_changed'), 'error');
+    expect(mockNavigate).not.toHaveBeenCalledWith('PgWebView', expect.anything());
   });
 
   test('missing handoff shows the expired state', async () => {

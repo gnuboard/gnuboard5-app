@@ -92,6 +92,11 @@ function comment(wr_id: number, over: Partial<CommentDto> = {}): CommentDto {
 function serveDetail(body: PostDetailDto) {
   server.use(http.get(DETAIL, () => HttpResponse.json({ success: true, data: body })));
 }
+/** 게시판 설정 — 기본 픽스처(board-free)에 일부만 덮어쓴다(예: 에디터 사용 여부). */
+function serveBoard(over: Record<string, unknown>) {
+  const board = (fixtureByName('board-free') as { data: Record<string, unknown> }).data;
+  server.use(http.get(`*/boards/${BO}`, () => HttpResponse.json({ success: true, data: { ...board, ...over } })));
+}
 function serveDetailError(status: number, message: string) {
   server.use(http.get(DETAIL, () => HttpResponse.json({ success: false, message }, { status })));
 }
@@ -195,12 +200,60 @@ describe('PostDetailScreen body and comments', () => {
     expect(screen.getByTestId('post-subject')).toHaveTextContent(fixture.wr_subject);
   });
 
-  test('plain posts show raw text and wr_link buttons', async () => {
+  test('plain posts on a board without the editor show raw text and wr_link buttons', async () => {
+    serveBoard({ bo_use_dhtml_editor: 0 });
     serveDetail(detail({ wr_option: '', wr_content: '<b>태그 그대로</b>', wr_link1: 'https://example.com/a' }));
     await renderScreen();
     expect(await screen.findByTestId('post-body-plain')).toBeTruthy();
     expect(screen.getByText('<b>태그 그대로</b>', { exact: false })).toBeTruthy();
     expect(screen.getByTestId('post-link-1')).toBeTruthy();
+  });
+
+  test('an editor-board post saved without html1 (old web editor) still renders as html', async () => {
+    serveBoard({ bo_use_dhtml_editor: 1 });
+    serveDetail(detail({ wr_option: '', wr_content: '<p></p><p>aaaa<b>1111</b></p>' }));
+    await renderScreen();
+    expect(await screen.findByTestId('post-body-html')).toBeTruthy();
+    expect(screen.getByText('1111')).toBeTruthy();
+    expect(screen.queryByText('<p>', { exact: false })).toBeNull();
+  });
+
+  test('tapping a body photo enlarges it; report on the viewer opens the image report menu', async () => {
+    serveDetail(
+      detail({ wr_option: 'html1', wr_content: '<p><img src="/data/editor/2610/a.jpg" alt="본문 사진"></p>' }),
+    );
+    await renderScreen();
+    expect(screen.queryByTestId('post-image-viewer')).toBeNull();
+    await fireEvent.press(await screen.findByRole('imagebutton', { name: '본문 사진' }));
+    expect(screen.getByTestId('post-image-viewer')).toBeTruthy();
+    expect(alertSpy).not.toHaveBeenCalled();
+    await fireEvent.press(screen.getByTestId('post-image-report'));
+    expect(screen.queryByTestId('post-image-viewer')).toBeNull();
+    await waitFor(() => expect(alertSpy.mock.calls.some((call) => call[0] === '이미지')).toBe(true));
+  });
+
+  test('my own post photo opens the viewer without a report button', async () => {
+    mockAuth.member = { mb_id: fixture.mb_id, mb_nick: '나' };
+    try {
+      serveDetail(
+        detail({ wr_option: 'html1', wr_content: '<p><img src="/data/editor/2610/a.jpg" alt="본문 사진"></p>' }),
+      );
+      await renderScreen();
+      await fireEvent.press(await screen.findByRole('imagebutton', { name: '본문 사진' }));
+      expect(screen.getByTestId('post-image-viewer')).toBeTruthy();
+      expect(screen.queryByTestId('post-image-report')).toBeNull();
+      await fireEvent.press(screen.getByTestId('post-image-close'));
+      expect(screen.queryByTestId('post-image-viewer')).toBeNull();
+    } finally {
+      mockAuth.member = null;
+    }
+  });
+
+  test('html2 posts render as html', async () => {
+    serveDetail(detail({ wr_option: 'html2', wr_content: '첫 줄\n<b>둘째 줄</b>' }));
+    await renderScreen();
+    expect(await screen.findByTestId('post-body-html')).toBeTruthy();
+    expect(screen.getByText('둘째 줄')).toBeTruthy();
   });
 
   test('builds the comment tree with depth and hides secret comments the viewer cannot read', async () => {

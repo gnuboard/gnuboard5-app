@@ -3,9 +3,10 @@
  * 처리·기각 버튼은 '접수'(open) 상태에서만 보인다.
  */
 import React from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { ReportItem } from '../../../entities/report/api';
 import { t } from '../../../shared/i18n';
+import { RADII, SPACE } from '../../../shared/ui/tokens/primitive';
 import { useColors } from '../../../shared/ui/tokens/theme';
 import { adminCardStyles as s } from './AdminListParts';
 import { authorLabel, reasonLabel, targetLabel } from './reportModel';
@@ -30,6 +31,15 @@ function ReportInfo({ report }: { report: ReportItem }) {
       <Text style={[s.target, { color: colors.onSurface }]} numberOfLines={1}>
         {report.target_key}
       </Text>
+      {report.target_image_url ? (
+        <Image
+          source={{ uri: report.target_image_url }}
+          style={[imageStyles.preview, { backgroundColor: colors.surfaceContainer }]}
+          resizeMode="contain"
+          accessibilityLabel={t('reports_admin.target_image')}
+          testID={`report-image-${report.report_id}`}
+        />
+      ) : null}
       {report.target_subject ? (
         <Text style={[s.subject, { color: colors.onSurface }]} numberOfLines={1}>
           {report.target_subject}
@@ -140,3 +150,8 @@ export function ReportCard({
     </View>
   );
 }
+
+/** 신고된 사진 미리보기 — 관리자가 무엇이 신고됐는지 바로 본다. 잘리지 않게 맞춘다. */
+const imageStyles = StyleSheet.create({
+  preview: { width: '100%', height: 180, borderRadius: RADII.sm, marginTop: SPACE[1] },
+});

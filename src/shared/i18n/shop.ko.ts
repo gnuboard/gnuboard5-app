@@ -289,6 +289,7 @@ export const shopKo: Record<string, string> = {
   'checkout.preview_note': '할인·배송비는 주문할 때 서버에서 최종 계산돼요',
   'checkout.empty': '주문할 상품이 없어요',
   'checkout.order_failed': '주문하지 못했어요',
+  'checkout.cart_changed': '장바구니가 바뀌어 주문할 상품을 다시 불러왔어요. 확인하고 다시 주문해 주세요',
   'checkout.toss_soon': '카드·간편결제는 곧 열려요',
   'order_complete.title': '주문 완료',
   'order_complete.heading_bank': '주문이 접수됐어요',

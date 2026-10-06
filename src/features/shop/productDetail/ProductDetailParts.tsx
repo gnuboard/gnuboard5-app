@@ -3,7 +3,7 @@
  * 배송/교환 정책 · 리뷰/문의는 기능 플래그), 재입고 알림 폼.
  */
 import React, { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, TextInput, View } from 'react-native';
 import { subscribeStockNotify, type StockNotifyOutcome } from '../../../entities/product/api';
 import { imageOrNull } from '../../../entities/product/model';
 import { useShopPolicyQuery } from '../../../entities/policy/api';
@@ -14,6 +14,7 @@ import { t } from '../../../shared/i18n';
 import { formatWon } from '../../../shared/lib/money';
 import { AppText } from '../../../shared/ui/AppText';
 import { Button } from '../../../shared/ui/Button';
+import { ImageViewer } from '../../../shared/ui/ImageViewer';
 import { ProductImage } from '../../../shared/ui/ProductImage';
 import { useTheme } from '../../../shared/ui/theme/ThemeProvider';
 import { RADII, SPACE } from '../../../shared/ui/tokens/primitive';
@@ -24,28 +25,6 @@ import { useFrameDimensions } from '../../../shared/web/frame';
 export function galleryImages(product: Pick<ShopProduct, 'image_url' | 'images'>): string[] {
   const all = [product.image_url, ...(product.images ?? [])].map(imageOrNull).filter((url): url is string => !!url);
   return [...new Set(all)];
-}
-
-function ImageViewer({ images, start, onClose }: { images: string[]; start: number | null; onClose: () => void }) {
-  const { width } = useFrameDimensions();
-  return (
-    <Modal visible={start !== null} animationType="fade" onRequestClose={onClose}>
-      <View style={styles.viewer} testID="product-image-viewer">
-        <ScrollView horizontal pagingEnabled contentOffset={{ x: (start ?? 0) * width, y: 0 }}>
-          {images.map((uri, index) => (
-            <View key={uri} style={{ width }}>
-              <ProductImage
-                uri={uri}
-                radius={0}
-                accessibilityLabel={t('shop.image_viewer', { index: index + 1, total: images.length })}
-              />
-            </View>
-          ))}
-        </ScrollView>
-        <Button label={t('common.close')} onPress={onClose} testID="product-image-close" />
-      </View>
-    </Modal>
-  );
 }
 
 /** 갤러리 위치 표시 "1 / 5" (시안 1g) — 이미지가 둘 이상일 때만. */
@@ -93,7 +72,13 @@ export function ProductGallery({ product }: { product: ShopProduct }) {
         ))}
       </ScrollView>
       <GalleryCounter index={page} total={images.length} />
-      <ImageViewer images={images} start={viewer} onClose={() => setViewer(null)} />
+      <ImageViewer
+        images={images}
+        start={viewer}
+        onClose={() => setViewer(null)}
+        testID="product-image-viewer"
+        closeTestID="product-image-close"
+      />
     </View>
   );
 }
@@ -242,7 +227,6 @@ export function RestockForm({ itId }: { itId: string }) {
 }
 
 const styles = StyleSheet.create({
-  viewer: { flex: 1, justifyContent: 'center', gap: SPACE[4], padding: SPACE[4] },
   counter: {
     position: 'absolute',
     right: SPACE[3],

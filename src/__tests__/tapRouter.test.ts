@@ -48,6 +48,11 @@ describe('routeForNotificationData', () => {
     ],
     ['broadcast with a system type', { type: 'system', source: 'broadcast' }, { name: 'Notifications' }],
     [
+      'admin new report opens report moderation',
+      { type: 'admin.report.created', target_type: 'image' },
+      { name: 'ReportModeration' },
+    ],
+    [
       'admin new order opens the admin order page, not the buyer order screen',
       { type: 'admin.order.placed', od_id: '2026100112345678' },
       { name: 'AdminOrder', params: { odId: '2026100112345678' } },

@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useCallback, useMemo, useState } from 'react';
 import { useBoardQuery } from '../../../entities/board/queries';
-import { postFlags } from '../../../entities/post/model';
+import { postBodyMode, type PostBodyMode } from '../../../shared/html/wrOption';
 import { useDeletePostMutation, usePostQuery, useVotePostMutation } from '../../../entities/post/queries';
 import { useToggleScrapMutation } from '../../../entities/scrap/queries';
 import type { PostDetailDto } from '../../../entities/post/schema';
@@ -29,8 +29,8 @@ export interface PostDetailState {
   isPending: boolean;
   error: unknown;
   notice: PostReadNotice | null;
-  /** html1/html2 → RichText, 아니면 평문. */
-  isHtml: boolean;
+  /** html1 → HTML, html2 → HTML + 줄바꿈 <br>, 그 외 → 평문(에디터 게시판의 옛 HTML 글은 HTML) — wrOption.postBodyMode. */
+  bodyMode: PostBodyMode;
   memberId: string | undefined;
   canManage: boolean;
   votes: { good: boolean; nogood: boolean };
@@ -135,7 +135,7 @@ export function usePostDetail({ boTable, wrId, secretHint, commentsLimit }: UseP
     isPending: query.isPending,
     error: query.error,
     notice: blockedAuthor ? { kind: 'blocked_author' } : notice,
-    isHtml: post ? postFlags(post).html : false,
+    bodyMode: post ? postBodyMode(post.wr_option, post.wr_content, board.data?.bo_use_dhtml_editor === 1) : 'plain',
     memberId,
     canManage: post ? canManagePost(post, memberId) : false,
     votes: post ? canVote(post, memberId) : { good: false, nogood: false },

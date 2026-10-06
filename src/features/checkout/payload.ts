@@ -6,6 +6,7 @@
  *    prepare 는 읽지 않는다. 스킴은 SDK `appScheme` 으로만 전달).
  * `client_uid` 는 호출자가 한 번 만들어 재시도 때 그대로 보낸다(서버 멱등). 게스트는 `od_pwd`(영숫자 3+).
  */
+import { MAX_CT_IDS } from '../../entities/cart/limits';
 import type { BankSettleCase, CheckoutMethod, TossSettleCase } from './methods';
 import { resolveRecipient, shouldSaveAddress, type OrderAddress, type OrderFormValues } from './orderForm.schema';
 
@@ -61,9 +62,24 @@ export type CheckoutIntent =
 export interface IntentOptions {
   isMember: boolean;
   clientUid: string;
-  /** 바로구매·선택 주문 — 카트 줄 id(CSV) 와 direct. */
+  /** 주문할 카트 줄 id — 주문서가 보여 준 줄(shownOrderCtIds). 바로구매면 direct 도. */
   ctIds?: readonly string[];
   direct?: boolean;
+}
+
+/**
+ * 주문서가 보여 준 카트 줄 — 재고 확인 · 주문 · 결제 준비에 이 줄만 보낸다(웹 주문서와 같은 규칙). 불러온 줄이 있으면 그 줄
+ * (화면 파라미터의 ctIds 로 불렀어도 실제로 받은 줄 — 다시 불렀으면 남은 줄만), 아직 없으면 파라미터의 ctIds.
+ * 주문서를 띄운 뒤 웹 · 다른 기기에서 장바구니가 바뀌어도(장바구니 모으기 · 담기 · 삭제) 본 것과 다른 주문이 생기지
+ * 않는다 — 서버는 보낸 줄이 하나라도 없으면 409 CART_CHANGED 로 멈춘다(isCartChanged).
+ * 서버가 받는 수(MAX_CT_IDS)보다 많으면 줄을 정하지 않는다(잘린 줄만 주문되지 않게, 예전처럼 파라미터 또는 장바구니 전부).
+ */
+export function shownOrderCtIds(
+  paramCtIds: readonly string[] | undefined,
+  items: readonly { ct_id: string | number }[] | undefined,
+): string[] | undefined {
+  if (!items?.length || items.length > MAX_CT_IDS) return paramCtIds?.length ? [...paramCtIds] : undefined;
+  return items.map((item) => String(item.ct_id));
 }
 
 function addressFields(orderer: OrderAddress, recipient: OrderAddress) {

@@ -172,6 +172,43 @@ describe('CheckoutScreen', () => {
     expect(body).toMatchObject({ od_settle_case: '무통장', od_bank_account: ACCOUNT, od_deposit_name: '홍길동' });
   });
 
+  test('sends the rows the form shows and reloads them when the cart changed', async () => {
+    let cartReads = 0;
+    let gather: string | null = null;
+    let body: Record<string, unknown> | null = null;
+    let stockQuery = '';
+    baseHandlers();
+    server.use(
+      http.get('*/api/v1/shop/cart', ({ request }) => {
+        cartReads += 1;
+        gather = new URL(request.url).searchParams.get('gather');
+        return envelope(cart([item(), item({ ct_id: '2', it_id: '501', it_name: '바지' })]));
+      }),
+      http.get('*/api/v1/shop/cart/order-stock', ({ request }) => {
+        stockQuery = new URL(request.url).searchParams.get('ct_ids') ?? '';
+        return envelope({ ok: true });
+      }),
+      http.post('*/api/v1/shop/orders', async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(
+          { success: false, message: '장바구니가 바뀌었습니다.', errors: { code: 'CART_CHANGED' } },
+          { status: 409 },
+        );
+      }),
+    );
+    mockAuth.member = { mb_id: 'm1' };
+    await render(wrap(checkout(), newClient()));
+    await fillOrderer();
+    const readsBefore = cartReads;
+    await fireEvent.press(screen.getByTestId('checkout-submit'));
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(t('checkout.cart_changed'), 'error'));
+    expect(gather).toBe('1'); // 장바구니 전부로 연 주문서는 모아서 받는다
+    expect(stockQuery).toBe('1,2');
+    expect(body).toMatchObject({ ct_ids: '1,2', od_settle_case: '무통장' });
+    await waitFor(() => expect(cartReads).toBeGreaterThan(readsBefore));
+    expect(navigation.replace).not.toHaveBeenCalled();
+  });
+
   test('missing orderer details are reported before any request', async () => {
     baseHandlers();
     await render(wrap(checkout(), newClient()));

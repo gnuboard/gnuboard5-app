@@ -307,7 +307,8 @@ export function CartScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation<Nav>();
   const shopEnabled = useSettingsQuery().data?.shop_enabled !== false;
-  const cart = useCartQuery(shopEnabled);
+  // 장바구니 화면은 웹 · 다른 기기에 담긴 상품도 모아 보여 준다(탭 배지는 모으지 않는다).
+  const cart = useCartQuery(shopEnabled, { gather: true });
   const clear = useClearCart();
   const isMember = useAuth().state.member !== null;
   const hasItems = (cart.data?.items.length ?? 0) > 0;

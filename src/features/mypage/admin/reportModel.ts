@@ -12,10 +12,13 @@ function parsePositiveSafeInt(value: string): number | null {
   return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
-/** 글·댓글 신고 → 글 화면 파라미터. 댓글은 부모 글(target_parent_id)을 연다. 이미지 신고는 null. */
+/**
+ * 글·댓글 신고 → 글 화면 파라미터. 댓글은 부모 글(target_parent_id)을 연다. 이미지 신고는 키에 원래 글이 있으면
+ * ("게시판/글번호|사진 경로") 그 글을, 옛 키(사진 주소만)면 null.
+ */
 export function parsePostTarget(report: ReportItem): { board: BoardCode; wr_id: number } | null {
-  if (report.target_type !== 'post' && report.target_type !== 'comment') return null;
-  const match = /^([A-Za-z0-9_]+)\/(\d+)$/.exec(report.target_key);
+  const pattern = report.target_type === 'image' ? /^([A-Za-z0-9_]+)\/(\d+)\|/ : /^([A-Za-z0-9_]+)\/(\d+)$/;
+  const match = pattern.exec(report.target_key);
   if (!match) return null;
   const board: BoardCode = match[1];
   if (!boTableSchema.safeParse(board).success) return null;

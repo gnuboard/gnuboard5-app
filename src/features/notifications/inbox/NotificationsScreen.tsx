@@ -77,6 +77,7 @@ export function NotificationsScreen({ navigation }: Props) {
     if (route?.name === 'QaDetail') navigation.navigate(route.name, route.params);
     else if (route?.name === 'PostDetail') navigation.navigate(route.name, route.params);
     else if (route?.name === 'OrderDetail') navigation.navigate(route.name, route.params);
+    else if (route?.name === 'ReportModeration') navigation.navigate(route.name);
     // 관리자 새 주문은 카드 아래 "관리자 주문서 보기" 버튼으로만 연다(adminOrderAction).
   };
 

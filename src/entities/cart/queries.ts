@@ -18,8 +18,17 @@ export const cartKeys = {
   mutation: ['shop', 'cart', 'mutation'] as const,
 };
 
-export function useCartQuery(enabled = true) {
-  return useQuery({ queryKey: cartKeys.main, queryFn: () => getCart(), staleTime: CART_STALE_MS, enabled });
+/**
+ * 장바구니 — 탭 배지와 장바구니 화면이 같이 쓴다. `gather` 는 장바구니 화면만: 웹 · 다른 기기에 담긴 이 회원의 상품을
+ * 이 카트로 모아 받는다(`GET /shop/cart?gather=1`). 배지는 모으지 않는다(웹의 머리 미니 장바구니와 같은 규칙).
+ */
+export function useCartQuery(enabled = true, options: { gather?: boolean } = {}) {
+  return useQuery({
+    queryKey: cartKeys.main,
+    queryFn: () => getCart({ gather: options.gather }),
+    staleTime: CART_STALE_MS,
+    enabled,
+  });
 }
 
 function recalc(cart: ShopCartResponse, items: CartItems): ShopCartResponse {

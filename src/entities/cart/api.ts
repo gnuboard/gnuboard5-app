@@ -15,8 +15,7 @@ import {
   type ShopCartResponse,
   type ShopShippingQuote,
 } from '../shop/schema';
-
-const MAX_CT_IDS = 100;
+import { MAX_CT_IDS } from './limits';
 
 export type AddToCartInput =
   | { it_id: string; ct_qty: number; direct?: boolean }
@@ -25,6 +24,8 @@ export type AddToCartInput =
 interface CartScope {
   ctIds?: readonly string[];
   direct?: boolean;
+  /** 장바구니 전부를 받을 때 그 회원의 다른 카트(웹 · 다른 기기) 상품을 이 카트로 모은다 — 줄 지정 · 바로구매면 무시. */
+  gather?: boolean;
 }
 
 const addResultSchema = z.looseObject({ cart_id: bigIdSchema.optional() });
@@ -39,6 +40,14 @@ export function isPhoneInquiryOnly(error: unknown): boolean {
   return error instanceof ApiError && error.status === 400 && error.message.includes('phone inquiry only');
 }
 
+/**
+ * 주문 · 결제 준비가 주문서가 본 줄이 장바구니에 그대로 있지 않아 멈췄는지(서버 409 CART_CHANGED) — 웹 · 다른 기기에서
+ * 장바구니가 바뀌었다(장바구니 모으기 · 삭제). 주문서는 줄을 다시 불러와 보여 준다.
+ */
+export function isCartChanged(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 409 && error.code === 'CART_CHANGED';
+}
+
 function requireCtId(value: string): string {
   if (!/^[0-9]{1,20}$/.test(value)) throw new ApiError('Invalid cart item id', 0);
   return value;
@@ -46,7 +55,11 @@ function requireCtId(value: string): string {
 
 function scopeQuery(scope: CartScope) {
   const ids = scope.ctIds?.length ? scope.ctIds.slice(0, MAX_CT_IDS).map(requireCtId).join(',') : undefined;
-  return { ct_ids: ids, direct: scope.direct ? 1 : undefined };
+  return {
+    ct_ids: ids,
+    direct: scope.direct ? 1 : undefined,
+    gather: scope.gather && !ids && !scope.direct ? 1 : undefined,
+  };
 }
 
 export function getCart(scope: CartScope = {}): Promise<ShopCartResponse> {

@@ -239,6 +239,19 @@ describe('cart view model', () => {
 });
 
 describe('CartScreen', () => {
+  test('the cart screen gathers the member rows from the web and other devices (gather=1)', async () => {
+    const gathers: (string | null)[] = [];
+    server.use(
+      http.get('*/api/v1/shop/cart', ({ request }) => {
+        gathers.push(new URL(request.url).searchParams.get('gather'));
+        return envelope(cart([item()]));
+      }),
+    );
+    await renderCart();
+    expect(await screen.findByTestId('cart-grand-total')).toBeTruthy();
+    expect(gathers).toContain('1');
+  });
+
   test('empty cart offers a way back to shopping', async () => {
     server.use(http.get('*/api/v1/shop/cart', () => envelope(cart([]))));
     await renderCart();

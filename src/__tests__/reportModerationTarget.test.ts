@@ -44,4 +44,14 @@ describe('parsePostTarget', () => {
     expect(parsePostTarget(report({ target_key: 'gallery/1' }))).toEqual({ board: 'gallery', wr_id: 1 });
     expect(parsePostTarget(report({ target_type: 'image', target_key: 'free/1' }))).toBeNull();
   });
+
+  test('image reports with their post open that post; old url-only keys do not', () => {
+    expect(parsePostTarget(report({ target_type: 'image', target_key: 'free/415|/data/editor/2610/a.jpg' }))).toEqual({
+      board: 'free',
+      wr_id: 415,
+    });
+    expect(
+      parsePostTarget(report({ target_type: 'image', target_key: 'https://site.test/data/editor/2610/a.jpg' })),
+    ).toBeNull();
+  });
 });

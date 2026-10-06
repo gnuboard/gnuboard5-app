@@ -9,6 +9,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { useBoardQuery } from '../../../entities/board/queries';
 import { buildCommentTree, type CommentNode } from '../../../entities/comment/model';
+import { imageReportKey } from '../../../entities/report/api';
 import { COMMENT_PAGE_SIZE } from '../../../entities/post/queries';
 import type { PostDetailDto } from '../../../entities/post/schema';
 import { useAuth } from '../../../entities/session/AuthContext';
@@ -30,6 +31,7 @@ import { PostActions } from './PostActions';
 import { PostAttachments } from './PostAttachments';
 import { PostDetailBar } from './PostDetailBar';
 import { useCommentAnchor } from './commentAnchor';
+import { usePostImageViewer } from './usePostImageViewer';
 import { PostBody } from './PostBody';
 import { PostDetailError, PostDetailNotice, PostDetailSkeleton } from './PostDetailStates';
 import { normalizePostDetailParams } from './postDetailParams';
@@ -42,6 +44,7 @@ import {
   type VoteFlag,
   type VoteOutcome,
 } from './usePostDetail';
+import { ImageViewer } from '../../../shared/ui/ImageViewer';
 import { KeyboardScreen } from '../../../shared/ui/KeyboardScreen';
 import { useFrameDimensions } from '../../../shared/web/frame';
 
@@ -117,6 +120,12 @@ function confirmDeletePost(detail: PostDetailState, afterDelete: () => void): vo
   ]);
 }
 
+/** 사진 신고 대상 — 어느 글의 사진인지 키에 같이 남긴다(관리자가 신고 관리에서 사진과 원래 글을 본다). */
+function imageReportTarget(boTable: string, post: PostDetailDto, uri: string): ModerationTarget {
+  const key = imageReportKey(boTable, post.wr_id, uri) ?? uri;
+  return { type: 'image', key, label: t('report.target_image'), author: post };
+}
+
 /** 글/댓글 '더보기' 시트 — 소유자면 수정·삭제가 앞에 붙고, 신고·차단은 항상. */
 function usePostSheets(boTable: string, wrId: number, detail: PostDetailState, navigation: Navigation) {
   const moderation = useModerationActions(boTable);
@@ -158,16 +167,16 @@ function usePostSheets(boTable: string, wrId: number, detail: PostDetailState, n
     },
     [boTable, moderation, detail.memberId],
   );
-  /** 본문 이미지 탭 → 이미지 신고(기록만, 숨김 없음 — PRD CM-F13). */
-  const openImageSheet = useCallback(
+  /** 사진 보기 화면의 "신고" → 이미지 신고·작성자 차단(기록만, 숨김 없음 — PRD CM-F13). */
+  const reportImage = useCallback(
     (uri: string) => {
       const post = detail.post;
       if (!post || isAuthor(post, detail.memberId)) return;
-      moderation.openSheet({ type: 'image', key: uri, label: t('report.target_image'), author: post }, [], false);
+      moderation.openSheet(imageReportTarget(boTable, post, uri), [], false);
     },
-    [moderation, detail.post, detail.memberId],
+    [boTable, moderation, detail.post, detail.memberId],
   );
-  return { openPostSheet, openCommentSheet, openImageSheet, reportSheet: moderation.reportSheet };
+  return { openPostSheet, openCommentSheet, reportImage, reportSheet: moderation.reportSheet };
 }
 
 function useCommentRenderer(detail: PostDetailState, memberId: string | undefined, actions: CommentHandlers) {
@@ -232,7 +241,7 @@ function usePostDetailController(props: Omit<ContentProps, 'onBack'>) {
   // 등록·답글·수정한 댓글로 목록을 옮긴다.
   const comments = useCommentActions(boTable, wrId, { onSaved: anchor.focusComment });
   const sheets = usePostSheets(boTable, wrId, detail, navigation);
-  const { openCommentSheet } = sheets;
+  const imageViewer = usePostImageViewer(!!detail.post && !isAuthor(detail.post, detail.memberId), sheets.reportImage);
   const login = useCallback(
     () => navigation.navigate('Login', { returnTo: { name: 'PostDetail', params: { board: boTable, wr_id: wrId } } }),
     [navigation, boTable, wrId],
@@ -243,9 +252,9 @@ function usePostDetailController(props: Omit<ContentProps, 'onBack'>) {
       reply: comments.reply,
       edit: comments.edit,
       confirmDelete: comments.confirmDelete,
-      more: openCommentSheet,
+      more: sheets.openCommentSheet,
     }),
-    [comments.reply, comments.edit, comments.confirmDelete, openCommentSheet],
+    [comments.reply, comments.edit, comments.confirmDelete, sheets.openCommentSheet],
   );
   const renderComment = useCommentRenderer(detail, member?.mb_id, handlers);
   const allowSecret = (board.data?.bo_use_secret ?? 0) > 0;
@@ -261,6 +270,7 @@ function usePostDetailController(props: Omit<ContentProps, 'onBack'>) {
     onVote,
     onScrap,
     sheets,
+    imageViewer,
     renderComment,
     allowSecret,
     listRef: anchor.listRef,
@@ -300,6 +310,18 @@ function PostDetailContent(props: ContentProps) {
       />
       {detail.post ? <ComposerSlot c={c} /> : null}
       <ReportSheet {...c.sheets.reportSheet} />
+      <ImageViewer
+        images={c.imageViewer.uri ? [c.imageViewer.uri] : []}
+        start={c.imageViewer.uri ? 0 : null}
+        onClose={c.imageViewer.close}
+        action={
+          c.imageViewer.report
+            ? { label: t('report.action'), onPress: c.imageViewer.report, testID: 'post-image-report' }
+            : undefined
+        }
+        testID="post-image-viewer"
+        closeTestID="post-image-close"
+      />
     </KeyboardScreen>
   );
 }
@@ -314,7 +336,7 @@ function DetailListHeader({ c, width, onBack }: { c: Controller; width: number; 
       width={width - HORIZONTAL_INSET}
       commentCount={c.more.total ?? c.tree.length}
       onAuthorPress={c.sheets.openPostSheet}
-      onImagePress={c.sheets.openImageSheet}
+      onImagePress={c.imageViewer.open}
       onVote={c.onVote}
     />
   );
@@ -373,7 +395,7 @@ function PostDetailHeader(props: HeaderProps) {
   return (
     <View>
       <PostHeader post={post} commentCount={commentCount} onAuthorPress={onAuthorPress} />
-      <PostBody post={post} isHtml={detail.isHtml} onImagePress={onImagePress} />
+      <PostBody post={post} mode={detail.bodyMode} onImagePress={onImagePress} />
       <PostAttachments files={post.files} width={width} onImagePress={onImagePress} />
       <PostActions
         post={post}

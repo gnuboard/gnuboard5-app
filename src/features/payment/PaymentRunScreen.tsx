@@ -47,6 +47,11 @@ function useOutcome(navigation: Props['navigation']) {
     } else if (outcome.kind === 'check') {
       showToast(t('pg.check'), 'info');
       navigation.replace('OrderDetail', { odId: outcome.orderId, uid: outcome.uid });
+    } else if (outcome.kind === 'failed' && outcome.code === 'CART_CHANGED') {
+      // 결제창을 열기 전에 멈췄다 — 웹 · 다른 기기에서 장바구니가 바뀌었다. 주문서가 줄을 다시 불러오게 하고 돌아간다.
+      void qc.invalidateQueries({ queryKey: cartKeys.root });
+      showToast(t('checkout.cart_changed'), 'error');
+      navigation.goBack();
     } else {
       const message = outcome.kind === 'failed' ? outcome.message || t('pg.failed') : t('pg.cancelled');
       showToast(message, outcome.kind === 'failed' ? 'error' : 'info');

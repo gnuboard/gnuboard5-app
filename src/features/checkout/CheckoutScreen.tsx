@@ -9,7 +9,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useAddressesQuery } from '../../entities/address/api';
-import { checkOrderStock, getCart } from '../../entities/cart/api';
+import { checkOrderStock, getCart, isCartChanged } from '../../entities/cart/api';
 import { cartKeys } from '../../entities/cart/queries';
 import { useMyCouponsQuery, useSendCostCouponsQuery } from '../../entities/coupon/queries';
 import { createOrder } from '../../entities/payment/api';
@@ -44,7 +44,7 @@ import {
 import { CheckoutCard, OrderItems } from './CheckoutCard';
 import { availableMethods, isWebViewPg, type CheckoutMethod } from './methods';
 import { validateOrderForm, type OrderFormValues } from './orderForm.schema';
-import { buildCheckoutIntent } from './payload';
+import { buildCheckoutIntent, shownOrderCtIds } from './payload';
 import { buildOrderPreview, type OrderPreview } from './pricing';
 import { addressToOrderAddress, useCheckoutForm } from './useCheckoutForm';
 import { KeyboardScreen } from '../../shared/ui/KeyboardScreen';
@@ -63,7 +63,8 @@ export function tossCheckoutReady(config: Data['config']['data']): boolean {
 function useCheckoutData(ctIds: string[] | undefined, direct: boolean | undefined, isMember: boolean) {
   const cart = useQuery({
     queryKey: [...cartKeys.root, 'checkout', ctIds?.join(',') ?? '', direct ? 1 : 0],
-    queryFn: () => getCart({ ctIds, direct }),
+    // 장바구니 전부로 여는 주문서는 웹 · 다른 기기의 상품도 모아 보여 주고, 보여 준 줄만 주문한다(shownOrderCtIds).
+    queryFn: () => getCart({ ctIds, direct, gather: true }),
   });
   return {
     cart,
@@ -101,14 +102,16 @@ interface SubmitContext {
   clientUid: string;
   isMember: boolean;
   pg: PgContext;
+  /** 주문서가 보여 준 카트 줄(shownOrderCtIds) — 재고 확인 · 주문 · 결제 준비가 이 줄만 쓴다. */
+  shownCtIds: string[] | undefined;
 }
 
 async function placeBankOrder(ctx: SubmitContext, values: OrderFormValues, method: CheckoutMethod, qc: QueryClient) {
-  const { ctIds, direct } = ctx.props.route.params ?? {};
+  const { direct } = ctx.props.route.params ?? {};
   const intent = buildCheckoutIntent(values, method, {
     isMember: ctx.isMember,
     clientUid: ctx.clientUid,
-    ctIds,
+    ctIds: ctx.shownCtIds,
     direct,
   });
   const order = await createOrder(intent.body);
@@ -119,11 +122,11 @@ async function placeBankOrder(ctx: SubmitContext, values: OrderFormValues, metho
 
 /** WebView PG — prepare 본문(게스트 비밀번호 포함)은 메모리 인계로, 화면에는 id 만. */
 function startPgPayment(ctx: SubmitContext, values: OrderFormValues, method: CheckoutMethod) {
-  const { ctIds, direct } = ctx.props.route.params ?? {};
+  const { direct } = ctx.props.route.params ?? {};
   const intent = buildCheckoutIntent(values, method, {
     isMember: ctx.isMember,
     clientUid: ctx.clientUid,
-    ctIds,
+    ctIds: ctx.shownCtIds,
     direct,
   });
   const handoffId = putCheckoutHandoff({
@@ -142,7 +145,7 @@ function startPgPayment(ctx: SubmitContext, values: OrderFormValues, method: Che
 function useSubmitOrder(ctx: SubmitContext, offered: readonly CheckoutMethod[]) {
   const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
-  const { ctIds, direct } = ctx.props.route.params ?? {};
+  const { direct } = ctx.props.route.params ?? {};
   const submit = async (values: OrderFormValues) => {
     const result = validateOrderForm(values, ctx.isMember);
     if (!result.ok) return showToast(t(result.messageKey), 'error');
@@ -154,10 +157,16 @@ function useSubmitOrder(ctx: SubmitContext, offered: readonly CheckoutMethod[]) 
     if (result.method.kind !== 'bank' && !viaWebView && !viaToss) return showToast(t('checkout.toss_soon'), 'info');
     setBusy(true);
     try {
-      await checkOrderStock({ ctIds, direct });
+      await checkOrderStock({ ctIds: ctx.shownCtIds, direct });
       if (viaWebView || viaToss) startPgPayment(ctx, result.values, result.method);
       else await placeBankOrder(ctx, result.values, result.method, qc);
     } catch (error) {
+      if (isCartChanged(error)) {
+        // 웹 · 다른 기기에서 장바구니가 바뀌었다 — 입력은 두고 줄만 다시 불러온다(보내는 줄도 따라 바뀐다).
+        showToast(t('checkout.cart_changed'), 'error');
+        void qc.invalidateQueries({ queryKey: cartKeys.root });
+        return;
+      }
       showToast(errorMessage(error, t('checkout.order_failed')), 'error');
     } finally {
       setBusy(false);
@@ -312,7 +321,11 @@ function CheckoutForm({ props, data, isMember }: { props: Props; data: Data; isM
   const pg = usePgContext(data);
   const model = useCheckoutModel(props, data, isMember, pg);
   const { values, patch, preview } = model;
-  const { submit, busy } = useSubmitOrder({ props, clientUid: model.clientUid, isMember, pg }, model.methods);
+  const shownCtIds = shownOrderCtIds(props.route.params?.ctIds, data.cart.data?.items);
+  const { submit, busy } = useSubmitOrder(
+    { props, clientUid: model.clientUid, isMember, pg, shownCtIds },
+    model.methods,
+  );
   const configPending = data.config.isPending;
   const label = values.method === 'bank' ? 'checkout.submit_bank' : 'checkout.submit_pay';
   return (

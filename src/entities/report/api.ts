@@ -4,7 +4,7 @@
  * 회원/비회원 모두 호출 가능 — 비회원은 device_id sig 검증된 X-Device-Id 로 식별.
  * UNIQUE 제약으로 같은 사용자/기기가 같은 컨텐츠 중복 신고 못 함.
  */
-import { api, ApiError } from '../../shared/api/client';
+import { API_BASE, api, ApiError } from '../../shared/api/client';
 import type { PaginationMeta } from '../../shared/api/client';
 import { INPUT_LIMITS, clampText, normalizeMemberScopeId } from '../../shared/lib/textLimits';
 import { editorImageFileUrl } from '../../shared/html/editorImages';
@@ -57,6 +57,8 @@ export interface ReportItem {
   target_author_nick?: string | null;
   target_author_banned?: boolean;
   target_hidden?: boolean;
+  /** 이미지 신고의 사진 주소(이 사이트 것만). 새 키면 위 target_* 는 원래 글의 요약이다. */
+  target_image_url?: string | null;
 }
 
 export interface ReportListResult {
@@ -138,8 +140,54 @@ function reportTargetKey(value: unknown, targetType: ReportTargetType): string |
     return id ? `${match[1]}/${id}` : null;
   }
 
+  const scoped = SCOPED_IMAGE_KEY_RE.exec(cleaned);
+  if (scoped) {
+    const id = positiveInt(scoped[2]);
+    if (!id || !boTableSchema.safeParse(scoped[1]).success) return null;
+    return scopedImageKey(scoped[1], id, editorImageFileUrl(`${siteOrigin()}${scoped[3]}`));
+  }
+  // 옛 키(2026-10-06 이전 앱) — 이미지 주소만.
   const imageUrl = editorImageFileUrl(cleaned);
   return imageUrl && imageUrl.length <= REPORT_IMAGE_KEY_MAX_LENGTH ? imageUrl : null;
+}
+
+/** 이미지 신고 키 "게시판/글번호|이미지 경로" — 서버 reports.php api_report_image_parts 와 같은 모양. */
+const SCOPED_IMAGE_KEY_RE = /^([A-Za-z0-9_]+)\/(\d+)\|(\/[A-Za-z0-9._~%/+=-]+)$/;
+
+function siteOrigin(): string {
+  try {
+    return new URL(API_BASE).origin;
+  } catch {
+    return '';
+  }
+}
+
+function scopedImageKey(boTable: string, wrId: number, imageUrl: string | null): string | null {
+  if (!imageUrl) return null;
+  const key = `${boTable}/${wrId}|${new URL(imageUrl).pathname}`;
+  return SCOPED_IMAGE_KEY_RE.test(key) && key.length <= REPORT_IMAGE_KEY_MAX_LENGTH ? key : null;
+}
+
+/**
+ * 글 사진 신고 키 — 어느 글의 사진인지 같이 남겨, 관리자가 신고 관리에서 사진과 원래 글을 본다. 신고할 수 없는 사진
+ * (에디터로 올린 사진이 아님)은 null. 키가 너무 길면 예전처럼 사진 주소만 보낸다.
+ */
+export function imageReportKey(boTable: string, wrId: number, imageUrl: string): string | null {
+  const url = editorImageFileUrl(imageUrl);
+  if (!url || !boTableSchema.safeParse(boTable).success || !positiveInt(wrId)) return null;
+  return scopedImageKey(boTable, wrId, url) ?? (url.length <= REPORT_IMAGE_KEY_MAX_LENGTH ? url : null);
+}
+
+/** 관리자 신고 목록의 사진 주소 — 이 사이트(API 와 같은 출처)의 https·http 주소만 띄운다. */
+function sameSiteImageUrl(value: unknown): string | null | undefined {
+  if (value === null) return null;
+  if (typeof value !== 'string') return undefined;
+  try {
+    const url = new URL(value);
+    return url.origin === siteOrigin() ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 function isReportTargetType(value: unknown): value is ReportTargetType {
@@ -212,6 +260,8 @@ function normalizeReportItem(value: unknown): ReportItem | null {
   if (targetHidden !== undefined) item.target_hidden = targetHidden;
   const targetAuthorBanned = optionalBoolean(value.target_author_banned);
   if (targetAuthorBanned !== undefined) item.target_author_banned = targetAuthorBanned;
+  const targetImageUrl = sameSiteImageUrl(value.target_image_url);
+  if (targetImageUrl !== undefined) item.target_image_url = targetImageUrl;
   const targetParentId = positiveInt(value.target_parent_id);
   if (targetParentId) item.target_parent_id = targetParentId;
   else if (value.target_parent_id === null) item.target_parent_id = null;

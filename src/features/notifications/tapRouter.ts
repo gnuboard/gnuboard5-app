@@ -20,6 +20,8 @@ export type NotificationRoute =
   | { name: 'OrderDetail'; params: RootStackParamList['OrderDetail'] }
   /** 관리자 새 주문 — 앱 화면이 아니라 관리자 주문서를 브라우저로 연다(adminOrderLink.ts). */
   | { name: 'AdminOrder'; params: { odId: string } }
+  /** 관리자 신고 알림(서버 reports.php `admin.report.created`) → 신고 관리. */
+  | { name: 'ReportModeration'; params?: undefined }
   | { name: 'Notifications'; params?: undefined };
 
 const odIdSchema = z
@@ -50,6 +52,8 @@ const payloadSchema = z.discriminatedUnion('type', [
 
 const broadcastSchema = z.object({ source: z.literal('broadcast') });
 
+const adminReportSchema = z.object({ type: z.literal('admin.report.created') });
+
 const localSourceSchema = z.object({ source: z.literal('local') });
 
 export function routeForNotificationData(data: unknown): NotificationRoute | null {
@@ -66,6 +70,7 @@ export function routeForNotificationData(data: unknown): NotificationRoute | nul
       params: { board: payload.bo_table, wr_id: payload.wr_id, comment_id: payload.comment_id },
     };
   }
+  if (adminReportSchema.safeParse(data).success) return { name: 'ReportModeration' };
   if (broadcastSchema.safeParse(data).success) return { name: 'Notifications' };
   return null;
 }

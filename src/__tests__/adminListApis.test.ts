@@ -1,7 +1,7 @@
 import { ApiError, api } from '../shared/api/client';
 import { listAccountDeletionRequests, updateAccountDeletionRequest } from '../entities/accountDeletion/api';
 import { updateMemberSanction } from '../entities/member/api';
-import { listReports, submitReport, updateReportStatus } from '../entities/report/api';
+import { imageReportKey, listReports, submitReport, updateReportStatus } from '../entities/report/api';
 import { INPUT_LIMITS } from '../shared/lib/textLimits';
 
 jest.mock('../shared/api/client', () => ({
@@ -29,6 +29,58 @@ const mockedApi = api as unknown as {
 
 beforeEach(() => {
   jest.clearAllMocks();
+});
+
+describe('image reports keep their post', () => {
+  const PHOTO = 'https://api.example.test/data/editor/2610/a_b.jpg';
+
+  test('the key is "board/post|path" for site editor photos only', () => {
+    expect(imageReportKey('free', 415, PHOTO)).toBe('free/415|/data/editor/2610/a_b.jpg');
+    expect(imageReportKey('free', 415, 'https://cdn.example.test/data/editor/2610/a.jpg')).toBeNull();
+    expect(imageReportKey('bad board', 415, PHOTO)).toBeNull();
+    expect(imageReportKey('free', 0, PHOTO)).toBeNull();
+  });
+
+  test('submits the scoped key and rejects paths outside editor uploads', async () => {
+    mockedApi.post.mockResolvedValueOnce({ duplicate: false });
+    await submitReport({ target_type: 'image', target_key: 'free/415|/data/editor/2610/a_b.jpg' });
+    expect(mockedApi.post).toHaveBeenLastCalledWith('/reports', {
+      target_type: 'image',
+      target_key: 'free/415|/data/editor/2610/a_b.jpg',
+    });
+    await expect(
+      submitReport({ target_type: 'image', target_key: 'free/415|/data/editor/../../etc/passwd' }),
+    ).rejects.toThrow('Invalid report target key');
+  });
+
+  test('the admin list shows a same-site photo only', async () => {
+    mockedApi.getEnvelope.mockResolvedValueOnce({
+      success: true,
+      data: [
+        {
+          report_id: '21',
+          target_type: 'image',
+          target_key: 'free/415|/data/editor/2610/a_b.jpg',
+          status: 'open',
+          created_at: '2026-10-06 10:00:00',
+          target_subject: '헐헐헐',
+          target_image_url: PHOTO,
+        },
+        {
+          report_id: '22',
+          target_type: 'image',
+          target_key: PHOTO,
+          status: 'open',
+          created_at: '2026-10-06 10:00:00',
+          target_image_url: 'https://tracker.test/pixel.gif',
+        },
+      ],
+      meta: { total: 2, page: 1, per_page: 20 },
+    });
+    const result = await listReports({ status: 'open' });
+    expect(result.items[0]).toMatchObject({ target_subject: '헐헐헐', target_image_url: PHOTO });
+    expect(result.items[1].target_image_url).toBeUndefined();
+  });
 });
 
 describe('admin list APIs', () => {

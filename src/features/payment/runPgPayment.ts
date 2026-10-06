@@ -16,7 +16,8 @@ import type { PaymentProvider, PreparedPayment } from './providers/types';
 export type RunOutcome =
   | { kind: 'done'; odId: string; uid?: string }
   | { kind: 'cancelled' }
-  | { kind: 'failed'; message: string }
+  /** code — prepare 가 멈춘 서버 코드(예: CART_CHANGED, 주문서가 본 줄이 바뀌었다). */
+  | { kind: 'failed'; message: string; code?: string }
   | { kind: 'check'; orderId: string; uid?: string };
 
 export interface PendingStore {
@@ -92,7 +93,12 @@ export async function runPgPayment(handoff: PgCheckoutHandoff, deps: RunDeps): P
   try {
     prepared = await deps.provider.prepare(handoff.body);
   } catch (error) {
-    return { kind: 'failed', message: error instanceof Error ? error.message : '' };
+    const code = (error as { code?: unknown } | null)?.code;
+    return {
+      kind: 'failed',
+      message: error instanceof Error ? error.message : '',
+      ...(typeof code === 'string' && code !== '' ? { code } : {}),
+    };
   }
   try {
     const provider = deps.provider.id === 'toss' ? 'toss' : 'pgWebView';

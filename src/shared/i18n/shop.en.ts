@@ -289,6 +289,7 @@ export const shopEn: Record<string, string> = {
   'checkout.preview_note': 'Discounts and shipping are finalized by the server when you order',
   'checkout.empty': 'Nothing to order',
   'checkout.order_failed': "Couldn't place the order",
+  'checkout.cart_changed': 'Your cart changed, so we reloaded the items. Check them and order again',
   'checkout.toss_soon': 'Card and easy pay are coming soon',
   'order_complete.title': 'Order placed',
   'order_complete.heading_bank': 'Your order has been received',

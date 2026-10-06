@@ -14,7 +14,13 @@ import {
   type OrderAddress,
   type OrderFormValues,
 } from '../features/checkout/orderForm.schema';
-import { buildCheckoutIntent, type BankOrderBody, type PreparePaymentBody } from '../features/checkout/payload';
+import {
+  buildCheckoutIntent,
+  shownOrderCtIds,
+  type BankOrderBody,
+  type PreparePaymentBody,
+} from '../features/checkout/payload';
+import { MAX_CT_IDS } from '../entities/cart/limits';
 import { buildOrderPreview, calculateCouponDiscount, calculatePointUsage } from '../features/checkout/pricing';
 import { http, HttpResponse, server } from '../test/msw/server';
 
@@ -217,6 +223,28 @@ describe('order form validation', () => {
     expect(validateOrderForm(form({ hopeDate: '2026/01/01' }), true)).toMatchObject({
       messageKey: 'checkout.err_invalid',
     });
+  });
+});
+
+describe('rows the checkout shows', () => {
+  const rows = (...ids: (string | number)[]) => ids.map((ct_id) => ({ ct_id }));
+
+  test('uses the loaded rows, also when the screen was opened for selected rows', () => {
+    expect(shownOrderCtIds(undefined, rows('31', 29))).toEqual(['31', '29']);
+    // 다시 불러온 뒤 사라진 줄은 보내지 않는다
+    expect(shownOrderCtIds(['10', '11', '12'], rows('10', '12'))).toEqual(['10', '12']);
+  });
+
+  test('before the rows load, keeps the screen params (or nothing)', () => {
+    expect(shownOrderCtIds(['10', '11'], undefined)).toEqual(['10', '11']);
+    expect(shownOrderCtIds(undefined, [])).toBeUndefined();
+  });
+
+  test('falls back to the old request when the server would cut the list', () => {
+    const many = rows(...Array.from({ length: MAX_CT_IDS + 1 }, (_, index) => index + 1));
+    expect(shownOrderCtIds(undefined, many)).toBeUndefined();
+    expect(shownOrderCtIds(['1', '2'], many)).toEqual(['1', '2']);
+    expect(shownOrderCtIds(undefined, many.slice(0, MAX_CT_IDS))).toHaveLength(MAX_CT_IDS);
   });
 });
 
