@@ -78,6 +78,8 @@ async function unregisterPushToken(pushToken: string, accessToken?: string): Pro
   const res = await fetchWithTimeout(`${API_BASE}/push-tokens/${encodeURIComponent(pushToken)}`, {
     method: 'DELETE',
     headers,
+    // 빈 JSON 이라도 싣는다 — 카페24 앞단이 Content-Length 없는 쓰기 요청을 502 로 끊는다(client.ts serializeBody).
+    body: '{}',
   });
   if (res.status === 401) return 'unauthorized';
   if (!res.ok && res.status !== 404) return 'retry';

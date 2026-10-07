@@ -11,7 +11,7 @@ import * as SecureStore from 'expo-secure-store';
 import { peekCheckoutHandoff, resetCheckoutHandoffsForTests } from '../entities/payment/checkoutHandoff';
 import { SETTINGS_QUERY_KEY } from '../entities/settings/queries';
 import type { ShopCartItem, ShopCartResponse } from '../entities/shop/schema';
-import { CheckoutScreen, checkoutMethods } from '../features/checkout/CheckoutScreen';
+import { CheckoutScreen, checkoutMethods, pickBankAccount } from '../features/checkout/CheckoutScreen';
 import { applyPostcodeTo, initialCheckoutValues } from '../features/checkout/useCheckoutForm';
 import { getGuestOrderUid, resetGuestOrdersForTests } from '../features/orders/guestOrderUids';
 import { OrderCompleteScreen } from '../features/orders/OrderCompleteScreen';
@@ -130,6 +130,13 @@ describe('checkout model', () => {
     expect(checkoutMethods(undefined)).toHaveLength(1);
   });
 
+  test('a bank account missing from the current list falls back to the first one', () => {
+    expect(pickBankAccount('B', ['A', 'B'])).toBe('B');
+    expect(pickBankAccount('removed', ['A', 'B'])).toBe('A');
+    expect(pickBankAccount('', ['A'])).toBe('A');
+    expect(pickBankAccount('A', [])).toBe('');
+  });
+
   test('postcode results land on the chosen address and clear the detail line', () => {
     const initial = initialCheckoutValues();
     const base = { ...initial, recipient: { ...initial.recipient, addr2: '101호' } };
@@ -230,6 +237,45 @@ describe('CheckoutScreen', () => {
     await fireEvent.press(screen.getByTestId('checkout-submit'));
     await waitFor(() => expect(mockToast).toHaveBeenCalledWith('재고가 부족합니다.', 'error'));
     expect(navigation.replace).not.toHaveBeenCalled();
+  });
+
+  test('a rejected bank account reloads the account list and the retry uses the current account', async () => {
+    const NEW_ACCOUNT = '신한은행 111-11-1111 (주)새계좌';
+    let accounts = [ACCOUNT];
+    const sent: unknown[] = [];
+    baseHandlers();
+    server.use(
+      http.get('*/api/v1/shop/payment/config', () => envelope({ ...CONFIG, bank_accounts: accounts })),
+      http.get('*/api/v1/shop/cart/order-stock', () => envelope({ ok: true })),
+      http.post('*/api/v1/shop/orders', async ({ request }) => {
+        const body = (await request.json()) as Record<string, unknown>;
+        sent.push(body.od_bank_account);
+        if (body.od_bank_account !== NEW_ACCOUNT) {
+          return HttpResponse.json(
+            {
+              success: false,
+              message: '입금 계좌를 다시 선택해 주세요.',
+              errors: { od_bank_account: 'Unknown bank account.' },
+            },
+            { status: 422 },
+          );
+        }
+        return envelope({ order: { od_id: OD_ID, uid: UID } });
+      }),
+    );
+    mockAuth.member = { mb_id: 'm1' };
+    await render(wrap(checkout(), newClient()));
+    await fillOrderer();
+    await fireEvent.press(screen.getByTestId('bank-account-0'));
+    accounts = [NEW_ACCOUNT]; // 관리자가 그사이 입금 계좌를 바꿨다
+
+    await fireEvent.press(screen.getByTestId('checkout-submit'));
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith('입금 계좌를 다시 선택해 주세요.', 'error'));
+    expect(await screen.findByText(NEW_ACCOUNT)).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId('checkout-submit'));
+    await waitFor(() => expect(navigation.replace).toHaveBeenCalledWith('OrderComplete', { odId: OD_ID, uid: UID }));
+    expect(sent).toEqual([ACCOUNT, NEW_ACCOUNT]);
   });
 
   test('find-zip opens the postcode screen for that field and applies the result', async () => {

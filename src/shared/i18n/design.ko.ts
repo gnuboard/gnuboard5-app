@@ -34,4 +34,12 @@ export const designKo: Record<string, string> = {
   'profile.photo_failed': '프로필 사진을 바꾸지 못했어요',
   'profile.photo_too_large': '사진을 {kb}KB 이하로 줄이지 못했어요. 다른 사진을 골라 주세요.',
   'notification.admin_order_open': '관리자 주문서 보기',
+  'board.editor_unsupported_title': '일부 서식이 사라질 수 있어요',
+  'board.editor_unsupported_msg':
+    '이 글에는 앱 편집기가 다루지 못하는 서식(표·동영상·글자 색·정렬 등)이 있어요. 앱에서 고쳐 저장하면 그 서식이 사라질 수 있어요.',
+  'board.editor_unsupported_continue': '그래도 고치기',
+  'board.html_off_title': 'HTML 글을 끌까요?',
+  'board.html_off_msg': '글자 모양과 본문 사진이 지워지고 글자만 남아요.',
+  'board.html_off_confirm': '끄기',
+  'board.content_length_over': '본문이 너무 길어요 ({count}/{max}자). 줄여야 저장할 수 있어요.',
 };

@@ -12,9 +12,9 @@ import { useAddressesQuery } from '../../entities/address/api';
 import { checkOrderStock, getCart, isCartChanged } from '../../entities/cart/api';
 import { cartKeys } from '../../entities/cart/queries';
 import { useMyCouponsQuery, useSendCostCouponsQuery } from '../../entities/coupon/queries';
-import { createOrder } from '../../entities/payment/api';
+import { createOrder, isBankAccountRejected } from '../../entities/payment/api';
 import { putCheckoutHandoff, type PgCheckoutHandoff } from '../../entities/payment/checkoutHandoff';
-import { usePaymentConfigQuery } from '../../entities/payment/config';
+import { paymentConfigKeys, usePaymentConfigQuery } from '../../entities/payment/config';
 import { usePointSummaryQuery } from '../../entities/point/api';
 import { useShopPolicyQuery } from '../../entities/policy/api';
 import { useAuth } from '../../entities/session/AuthContext';
@@ -82,6 +82,11 @@ type Data = ReturnType<typeof useCheckoutData>;
  * 결제 수단 — 무통장은 항상(계좌가 있을 때), PG 수단은 Toss 화면(T-P1D-06)이 준비됐거나 `webview_pg` 플래그가 켜지고
  * 상점 PG 가 KCP·이니시스·나이스페이일 때만(WebView 결제, T-P2-07).
  */
+/** 고른 입금 계좌 — 지금 목록에 없으면(안 골랐거나 관리자가 그사이 바꿨다) 첫 계좌. */
+export function pickBankAccount(selected: string, accounts: readonly string[]): string {
+  return accounts.includes(selected) ? selected : (accounts[0] ?? '');
+}
+
 export function checkoutMethods(config: Data['config']['data'], webviewPg = false): CheckoutMethod[] {
   const pgWebView = webviewPg && isWebViewPg(config?.pg_service);
   return availableMethods(config, { webviewPg }).filter(
@@ -167,6 +172,8 @@ function useSubmitOrder(ctx: SubmitContext, offered: readonly CheckoutMethod[]) 
         void qc.invalidateQueries({ queryKey: cartKeys.root });
         return;
       }
+      // 관리자가 그사이 입금 계좌를 바꿨다 — 계좌 목록을 다시 받는다(고른 계좌가 없어졌으면 pickBankAccount 가 첫 계좌로).
+      if (isBankAccountRejected(error)) void qc.invalidateQueries({ queryKey: paymentConfigKeys.root });
       showToast(errorMessage(error, t('checkout.order_failed')), 'error');
     } finally {
       setBusy(false);
@@ -226,7 +233,7 @@ function useCheckoutModel(props: Props, data: Data, isMember: boolean, pg: PgCon
   const values: OrderFormValues = {
     ...form.values,
     method: form.values.method || methods[0]?.value || '',
-    bankAccount: form.values.bankAccount || accounts[0] || '',
+    bankAccount: pickBankAccount(form.values.bankAccount, accounts),
   };
   const preview = useOrderPreview(data, values, isMember);
   const addressProps: Omit<AddressProps, 'field' | 'value'> = {

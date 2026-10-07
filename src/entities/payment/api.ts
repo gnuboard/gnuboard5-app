@@ -149,6 +149,11 @@ export async function getMobileStatus(orderId: string, uid?: string): Promise<Mo
   });
 }
 
+/** 무통장 주문이 입금 계좌 때문에 거절됐는가(422 `errors.od_bank_account`) — 관리자가 그사이 계좌를 바꾼 경우. */
+export function isBankAccountRejected(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 422 && !!error.fieldErrors?.od_bank_account;
+}
+
 /** 무통장 주문 — 두 응답 형태(`{order:{od_id,uid}}` / `{od_id,uid}`)를 하나로. */
 export async function createOrder(body: object): Promise<CreatedOrder> {
   const data = await request('/shop/orders', { method: 'POST', body, schema: createdOrderSchema });

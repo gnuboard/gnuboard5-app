@@ -40,6 +40,8 @@ export interface EditorImages {
   uploading: boolean;
   /** 사진을 골라 업로드하고 커서 자리에 태그를 넣은 새 본문을 돌려준다. 실패는 throw. */
   attach: (content: string, selection: TextSelection) => Promise<AttachOutcome>;
+  /** WYSIWYG 편집기용 — 사진을 골라 업로드하고 주소만 돌려준다(넣기는 편집기 명령). 취소면 null, 실패는 throw. */
+  upload: () => Promise<string | null>;
   /** 본문에 남지 않은 업로드 이미지를 서버에서 지운다(저장 후·취소 시). */
   discardMissing: (content: string, extraCandidates?: Iterable<string>) => Promise<void>;
 }
@@ -85,6 +87,20 @@ export function useEditorImages(deps: EditorImageDeps = defaultEditorImageDeps):
     [deps],
   );
 
+  const upload = useCallback(async (): Promise<string | null> => {
+    if (busy.current) return null;
+    busy.current = true;
+    setUploading(true);
+    try {
+      const fileUrl = await pickAndUpload(deps);
+      if (fileUrl) uploaded.current.add(fileUrl);
+      return fileUrl;
+    } finally {
+      busy.current = false;
+      setUploading(false);
+    }
+  }, [deps]);
+
   const discardMissing = useCallback(
     async (content: string, extraCandidates: Iterable<string> = []) => {
       const candidates = [...uploaded.current, ...extraCandidates];
@@ -95,5 +111,5 @@ export function useEditorImages(deps: EditorImageDeps = defaultEditorImageDeps):
     [deps],
   );
 
-  return { uploading, attach, discardMissing };
+  return { uploading, attach, upload, discardMissing };
 }

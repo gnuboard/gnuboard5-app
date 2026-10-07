@@ -6,3 +6,5 @@ coverage
 docs/legacy-dday
 package-lock.json
 *.md
+# 편집기 묶음 — scripts/build-rich-editor.mjs 가 만든다
+*.generated.ts

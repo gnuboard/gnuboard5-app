@@ -10,7 +10,7 @@ import type { PostDetailDto } from '../../../entities/post/schema';
 import { attachmentsFromFiles, type Attachment } from '../../../entities/postFile/model';
 import type { PostFileDto } from '../../../entities/postFile/schema';
 import { useAuth } from '../../../entities/session/AuthContext';
-import { parseWrOption } from '../../../shared/html/wrOption';
+import { parseWrOption, postBodyMode } from '../../../shared/html/wrOption';
 import { t } from '../../../shared/i18n';
 import { viewerFromMember } from '../boards/useBoardEntry';
 import { EMPTY_FORM, composeSettings, type ComposeForm, type ComposeSettings, type FieldErrors } from './composeModel';
@@ -36,14 +36,18 @@ export interface ComposeFormState {
   draftKey: string | null;
 }
 
-export function formFromPost(post: PostDetailDto): ComposeForm {
+/**
+ * 수정할 글 → 폼. HTML 글 판정은 글 보기와 같다(postBodyMode) — 에디터 게시판에서 옛 웹 에디터가 html1 없이 저장한
+ * HTML 글도 HTML 글로 연다(태그가 글자로 보이는 입력창이 아니라 편집기로).
+ */
+export function formFromPost(post: PostDetailDto, editorBoard = false): ComposeForm {
   const options = parseWrOption(post.wr_option);
   return {
     subject: post.wr_subject,
     content: post.wr_content ?? '',
     category: post.ca_name,
     secret: options.has('secret'),
-    html: options.has('html1') || options.has('html2'),
+    html: postBodyMode(post.wr_option, post.wr_content ?? '', editorBoard) !== 'plain',
     link1: post.wr_link1 ?? '',
     link2: post.wr_link2 ?? '',
   };
@@ -87,11 +91,11 @@ export function useComposeForm(boTable: string, wrId: number | undefined, alert 
   }, []);
 
   useEffect(() => {
-    if (!isEdit || !post.data || seeded.current) return;
+    if (!isEdit || !post.data || !board.data || seeded.current) return;
     seeded.current = true;
-    setForm(formFromPost(post.data));
+    setForm(formFromPost(post.data, settings.htmlEditor));
     setAttachmentsState(attachmentsFromFiles(post.data.files));
-  }, [isEdit, post.data]);
+  }, [isEdit, post.data, board.data, settings.htmlEditor]);
   // 카테고리 보드에서 첫 카테고리를 기본값으로(서버 422 를 미리 막는다) — 상태를 바꾸지 않고 파생한다.
   const effectiveForm = useMemo(() => {
     const first = settings.categories[0];

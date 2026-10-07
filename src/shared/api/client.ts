@@ -224,8 +224,13 @@ function isFormData(body: unknown): body is FormData {
 }
 
 /** JSON 이 기본, FormData 는 그대로(첨부 업로드 — entities/postFile). */
-function serializeBody(body: unknown): BodyInit | undefined {
-  if (body === undefined) return undefined;
+/**
+ * 본문 없는 POST·PUT·PATCH·DELETE 는 빈 JSON `{}` 을 싣는다 — 카페24 앞단은 Content-Length 없는 POST 를 PHP 에 닿기 전에
+ * 502 로 끊는데(2026-10-06 서버 세션 측정), 플랫폼에 따라 fetch 가 본문 없는 요청에 Content-Length 를 빼기 때문이다.
+ * API 는 빈 JSON 을 그대로 받는다. GET 은 본문을 싣지 않는다.
+ */
+function serializeBody(body: unknown, method: HttpMethod): BodyInit | undefined {
+  if (body === undefined) return method === 'GET' ? undefined : '{}';
   return isFormData(body) ? body : JSON.stringify(body);
 }
 
@@ -380,7 +385,7 @@ export async function requestEnvelope<T>(
       {
         method,
         headers,
-        body: serializeBody(opts.body),
+        body: serializeBody(opts.body, method),
         credentials: opts.credentials ?? resolveCredentials(method, path),
         signal: opts.signal,
       },

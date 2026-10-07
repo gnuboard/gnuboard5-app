@@ -15,6 +15,8 @@ module.exports = {
   resolver: 'react-native-worklets/jest/resolver.js',
   // jest-expo 는 'react-native' export condition 으로 해석해 msw 의 ESM 번들을 고르므로 CJS 빌드로 고정 (T-P0-08 msw).
   moduleNameMapper: {
+    // 글쓰기 WYSIWYG 편집기(WebView)는 jest 에서 돌지 않는다 — 같은 모양의 입력창 대역으로(src/test/richEditorStub.tsx).
+    '/richEditor/RichEditor$': '<rootDir>/src/test/richEditorStub.tsx',
     // 테스트는 brand.json 대신 고정된 테스트 브랜드(공식 앱 값)로 돈다 — 내 사이트 앱으로 brand.json 을 바꿔도
     // 앱 로직 테스트는 그대로 통과한다. 실제 brand.json 의 모양은 appIds.test.ts 가 파일을 직접 읽어 검사한다.
     '^(\\.\\./)+brand\\.json$': '<rootDir>/src/test/brand.fixture.json',
@@ -86,6 +88,9 @@ module.exports = {
     '!src/shared/lib/tempFiles.ts',
     '!src/shared/lib/netInfo.ts',
     '!src/features/update/otaUpdateChecker.ts',
+    // 글쓰기 편집기 중 DOM 에서만 도는 것(WebView 안·웹 데모 Tiptap)과 만든 묶음 — jest(DOM 없음) 밖. 약속은 protocol 이 진다.
+    '!src/features/community/compose/richEditor/{editorCore,webviewEntry}.ts',
+    '!src/**/*.generated.ts',
   ],
   coverageThreshold: {
     global: { branches: 80, functions: 80, lines: 80, statements: 80 },

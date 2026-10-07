@@ -6,6 +6,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react-native';
+import { INPUT_LIMITS } from '../shared/lib/textLimits';
 import React from 'react';
 import { Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -384,7 +385,24 @@ describe('PostComposeScreen', () => {
     await fireEvent.press(screen.getByTestId('compose-submit'));
     await waitFor(() => expect(calls).toBe(1));
     expect(body.wr_option).toEqual(['html1']);
-    expect(body.wr_content).toContain('<b>');
+    expect(body.wr_content).toContain('<strong>');
+  });
+
+  test('turning HTML off asks first and keeps the body until confirmed; an over-long body warns at once', async () => {
+    await renderCompose({ board: 'free' });
+    await screen.findByTestId('compose-subject');
+    await fireEvent.press(screen.getByTestId('compose-html'));
+    await fireEvent.changeText(screen.getByTestId('compose-content'), '<p><strong>굵게</strong></p>');
+    await fireEvent.press(screen.getByTestId('compose-html'));
+    expect(alertSpy).toHaveBeenLastCalledWith('HTML 글을 끌까요?', expect.any(String), expect.any(Array));
+    expect(screen.getByTestId('compose-content')).toHaveProp('value', '<p><strong>굵게</strong></p>');
+    const confirm = (alertSpy.mock.lastCall![2] as { text: string; onPress?: () => void }[])[1]!;
+    await act(async () => confirm.onPress?.());
+    expect(screen.getByTestId('compose-content')).toHaveProp('value', '굵게');
+
+    expect(screen.queryByTestId('compose-content-over')).toBeNull();
+    await fireEvent.changeText(screen.getByTestId('compose-content'), 'x'.repeat(INPUT_LIMITS.postContent + 1));
+    expect(screen.getByTestId('compose-content-over')).toBeTruthy();
   });
 
   test('429 locks the submit button with the remaining cooldown', async () => {

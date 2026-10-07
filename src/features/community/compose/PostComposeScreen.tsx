@@ -3,7 +3,7 @@
  * → 첨부 → 저장. 상태는 useComposeForm(초안·원본), 이미지는 useEditorImages, 저장은 useSubmitPost 가 맡는다.
  */
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import type { RootStackParamList } from '../../../navigation/types';
 import { t } from '../../../shared/i18n';
@@ -23,13 +23,10 @@ import { AttachmentList } from './AttachmentList';
 import { ComposeOptions, errorText } from './ComposeOptions';
 import { ComposeToolbar } from './ComposeToolbar';
 import { LinkPromptModal } from './LinkPromptModal';
-import {
-  buildAnchorTag,
-  insertTextAtSelection,
-  normalizeLinkUrl,
-  wrapSelection,
-  type TextSelection,
-} from './composeHtml';
+import { htmlToPlainText } from '../../../shared/html/plainText';
+import { hasUnsupportedEditorContent, normalizeLinkUrl, plainTextToHtml } from './composeHtml';
+import { RichEditor } from './richEditor/RichEditor';
+import { EMPTY_RICH_STATE, type RichCommand, type RichEditorHandle, type RichState } from './richEditor/protocol';
 import { useComposeForm, type ComposeFormState } from './useComposeForm';
 import { useEditorImages, type EditorImages } from './useEditorImages';
 import { useSubmitPost } from './useSubmitPost';
@@ -66,66 +63,73 @@ export function PostComposeScreen({ route, navigation }: Props) {
 }
 
 interface EditorActions {
-  wrap: (open: string, close: string, placeholder: string) => void;
-  insert: (text: string) => void;
+  /** 커서 자리 서식(툴바 켜짐 표시). */
+  richState: RichState;
+  onRichState: (state: RichState) => void;
+  command: (command: RichCommand) => void;
   photo: () => void;
   insertLink: (raw: string) => boolean;
-  onSelectionChange: (selection: TextSelection) => void;
 }
 
-function tooLong(): void {
-  Alert.alert(t('board.content_too_long_title'), t('board.content_too_long_msg'));
-}
-
-/** 본문 편집 동작 — 선택 영역은 ref 로 두어 키 입력마다 리렌더하지 않는다. */
-function useEditorActions(state: ComposeFormState, images: EditorImages): EditorActions {
-  const selection = useRef<TextSelection>({ start: 0, end: 0 });
-  const { form, patch } = state;
-  /** 본문을 바꾸고 커서를 삽입 영역 끝으로 옮긴다 — 네이티브 onSelectionChange 가 늦어도 연속 툴바 조작이 어긋나지 않는다. */
-  const setContent = useCallback(
-    (content: string) => {
-      if (content.length > INPUT_LIMITS.postContent) {
-        tooLong();
-        return false;
-      }
-      const cursor = selection.current.end + (content.length - form.content.length);
-      selection.current = { start: cursor, end: cursor };
-      patch({ content });
-      return true;
-    },
-    [patch, form.content],
-  );
+/** HTML 글 편집 동작 — 서식·링크·사진을 편집기 명령으로 보낸다(태그를 글자로 끼우지 않는다). */
+function useEditorActions(images: EditorImages, richRef: React.RefObject<RichEditorHandle | null>): EditorActions {
+  const [richState, setRichState] = useState<RichState>(EMPTY_RICH_STATE);
+  const command = useCallback((next: RichCommand) => richRef.current?.run(next), [richRef]);
   const photo = useCallback(() => {
     images
-      .attach(form.content, selection.current)
-      .then((outcome) => {
-        if (outcome.kind === 'inserted') setContent(outcome.content);
-        if (outcome.kind === 'too_long') Alert.alert(t('board.content_too_long_title'), t('board.image_too_long_msg'));
+      .upload()
+      .then((src) => {
+        if (src) command({ type: 'image', src });
       })
       .catch((error: unknown) => {
         Alert.alert(t('board.image_upload_failed'), errorMessage(error, t('common.error')));
       });
-  }, [images, form.content, setContent]);
+  }, [images, command]);
   const insertLink = useCallback(
     (raw: string) => {
-      const url = normalizeLinkUrl(raw);
-      if (!url) return false;
-      const { start, end } = selection.current;
-      const tag = buildAnchorTag(url, form.content.slice(start, end));
-      return setContent(insertTextAtSelection(form.content, selection.current, tag));
+      const href = normalizeLinkUrl(raw);
+      if (!href) return false;
+      command({ type: 'link', href });
+      return true;
     },
-    [form.content, setContent],
+    [command],
   );
-  return {
-    wrap: (open, close, placeholder) =>
-      setContent(wrapSelection(form.content, selection.current, open, close, placeholder)),
-    insert: (text) => setContent(insertTextAtSelection(form.content, selection.current, text)),
-    photo,
-    insertLink,
-    onSelectionChange: (next) => {
-      selection.current = next;
-    },
-  };
+  return { richState, onRichState: setRichState, command, photo, insertLink };
+}
+
+/** HTML 글 켜고 끄기 — 본문을 바꿔 둔다(평문 → 문단 HTML, HTML → 글자만). 태그가 글자로 보이지 않게. */
+function htmlTogglePatch(form: ComposeFormState['form'], next: Partial<ComposeFormState['form']>) {
+  if (next.html === undefined || next.html === form.html) return next;
+  const content = next.html ? plainTextToHtml(form.content) : htmlToPlainText(form.content);
+  return { ...next, content };
+}
+
+/** 옵션 바꾸기 — HTML 글을 끌 때는 글자 모양·사진이 지워지니 먼저 묻는다. */
+function patchOptions(state: ComposeFormState, next: Partial<ComposeFormState['form']>): void {
+  const { form, patch } = state;
+  const apply = () => patch(htmlTogglePatch(form, next));
+  if (next.html === false && form.html && form.content.trim()) {
+    Alert.alert(t('board.html_off_title'), t('board.html_off_msg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('board.html_off_confirm'), style: 'destructive', onPress: apply },
+    ]);
+    return;
+  }
+  apply();
+}
+
+/** 예전 편집기 서식(표·동영상·색·정렬)이 있는 글을 고치려 하면 한 번 알린다 — 앱 편집기로 저장하면 사라질 수 있다. */
+function useUnsupportedContentWarning(state: ComposeFormState, goBack: () => void): void {
+  const warned = useRef(false);
+  const risky = state.isEdit && !state.loading && state.form.html && hasUnsupportedEditorContent(state.originalContent);
+  useEffect(() => {
+    if (!risky || warned.current) return;
+    warned.current = true;
+    Alert.alert(t('board.editor_unsupported_title'), t('board.editor_unsupported_msg'), [
+      { text: t('common.back'), style: 'cancel', onPress: goBack },
+      { text: t('board.editor_unsupported_continue') },
+    ]);
+  }, [risky, goBack]);
 }
 
 /** 링크 삽입 — iOS 는 Alert.prompt, Android 는 모달. */
@@ -161,8 +165,12 @@ interface ContentProps {
   goBack: () => void;
 }
 
-/** 수정 취소는 확인 후 업로드만 하고 안 쓴 이미지를 지운다. 새 글은 초안이 남으므로 바로 닫는다. */
+/**
+ * 수정 화면 지키기 — 예전 편집기 서식이 있는 글이면 먼저 알리고(useUnsupportedContentWarning), 수정 취소는 확인 후
+ * 업로드만 하고 안 쓴 이미지를 지운다. 새 글은 초안이 남으므로 바로 닫는다.
+ */
 function useCancel(state: ComposeFormState, images: EditorImages, goBack: () => void) {
+  useUnsupportedContentWarning(state, goBack);
   return useCallback(() => {
     if (!state.isEdit) {
       goBack();
@@ -184,12 +192,12 @@ function ComposeContent({ boTable, wrId, goBack }: ContentProps) {
   const state = useComposeForm(boTable, wrId);
   const images = useEditorImages();
   const submitter = useSubmitPost(boTable, wrId, state, images);
-  const editor = useEditorActions(state, images);
+  const richRef = useRef<RichEditorHandle | null>(null);
+  const editor = useEditorActions(images, richRef);
   const link = useLinkPrompt(editor.insertLink);
   const cancel = useCancel(state, images, goBack);
   const busy = submitter.saving || images.uploading;
   const title = state.isEdit ? t('board.edit_title') : t('board.compose_new');
-  const cooling = submitter.cooldownMs > 0;
 
   return (
     <KeyboardScreen style={[styles.root, { backgroundColor: colors.background }]} testID="post-compose-screen">
@@ -201,7 +209,7 @@ function ComposeContent({ boTable, wrId, goBack }: ContentProps) {
         leftA11yLabel={t('common.cancel')}
         rightIcon={t('common.save')}
         rightAccent
-        rightDisabled={busy || cooling}
+        rightDisabled={busy || submitter.cooldownMs > 0}
         onRightPress={() => void submitter.submit()}
         rightTestID="compose-submit"
       />
@@ -213,6 +221,7 @@ function ComposeContent({ boTable, wrId, goBack }: ContentProps) {
         <ComposeBody
           state={state}
           editor={editor}
+          richRef={richRef}
           images={images}
           busy={busy}
           cooldownMs={submitter.cooldownMs}
@@ -233,6 +242,7 @@ function ComposeContent({ boTable, wrId, goBack }: ContentProps) {
 interface BodyProps {
   state: ComposeFormState;
   editor: EditorActions;
+  richRef: React.Ref<RichEditorHandle>;
   images: EditorImages;
   busy: boolean;
   /** 429 뒤 다시 저장할 수 있을 때까지 남은 시간 — 0 이면 안내를 숨긴다. */
@@ -240,7 +250,7 @@ interface BodyProps {
   onLink: () => void;
 }
 
-function ComposeBody({ state, editor, images, busy, cooldownMs, onLink }: BodyProps) {
+function ComposeBody({ state, editor, richRef, images, busy, cooldownMs, onLink }: BodyProps) {
   const { form, settings, errors, patch } = state;
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -260,21 +270,21 @@ function ComposeBody({ state, editor, images, busy, cooldownMs, onLink }: BodyPr
         required
         testID="compose-subject"
       />
-      <ComposeOptions form={form} settings={settings} errors={errors} disabled={busy} onPatch={patch} />
-      <AppText variant="labelSm" tone="onSurfaceSecondary">
-        {t('board.body_label')}
-      </AppText>
-      {form.html ? (
-        <ComposeToolbar
-          onWrap={editor.wrap}
-          onInsert={editor.insert}
-          onLink={onLink}
-          onPhoto={editor.photo}
-          uploading={images.uploading}
-          disabled={busy}
-        />
-      ) : null}
-      <ContentInput state={state} editor={editor} busy={busy} />
+      <ComposeOptions
+        form={form}
+        settings={settings}
+        errors={errors}
+        disabled={busy}
+        onPatch={(next) => patchOptions(state, next)}
+      />
+      <ContentInput
+        state={state}
+        editor={editor}
+        richRef={richRef}
+        busy={busy}
+        uploading={images.uploading}
+        onLink={onLink}
+      />
       {settings.canUpload && settings.uploadCount > 0 ? (
         <AttachmentList
           attachments={state.attachments}
@@ -289,7 +299,62 @@ function ComposeBody({ state, editor, images, busy, cooldownMs, onLink }: BodyPr
   );
 }
 
-function ContentInput({ state, editor, busy }: { state: ComposeFormState; editor: EditorActions; busy: boolean }) {
+interface ContentInputProps {
+  state: ComposeFormState;
+  editor: EditorActions;
+  richRef: React.Ref<RichEditorHandle>;
+  busy: boolean;
+  uploading: boolean;
+  onLink: () => void;
+}
+
+/** 본문 — HTML 글은 서식 툴바 + WYSIWYG 편집기, 평문 글은 입력창. */
+function ContentInput({ state, editor, richRef, busy, uploading, onLink }: ContentInputProps) {
+  const { form, errors, patch } = state;
+  return (
+    <>
+      <AppText variant="labelSm" tone="onSurfaceSecondary">
+        {t('board.body_label')}
+      </AppText>
+      {form.html ? (
+        <ComposeToolbar
+          onCommand={editor.command}
+          onLink={onLink}
+          onPhoto={editor.photo}
+          active={editor.richState}
+          uploading={uploading}
+          disabled={busy}
+        />
+      ) : null}
+      {form.html ? (
+        <RichEditor
+          ref={richRef}
+          value={form.content}
+          onChange={(content) => patch({ content })}
+          onState={editor.onRichState}
+          editable={!busy}
+          placeholder={t('board.content_placeholder')}
+          testID="compose-content"
+        />
+      ) : (
+        <PlainContentInput state={state} busy={busy} />
+      )}
+      {errors.wr_content ? (
+        <AppText variant="caption" tone="error" testID="compose-content-error">
+          {errorText(errors.wr_content)}
+        </AppText>
+      ) : form.content.length > INPUT_LIMITS.postContent ? (
+        // 편집기는 입력창처럼 글자 수에서 멈추지 않는다 — 넘은 순간 바로 알린다(저장은 검증이 막는다).
+        <AppText variant="caption" tone="error" testID="compose-content-over">
+          {t('board.content_length_over', { count: form.content.length, max: INPUT_LIMITS.postContent })}
+        </AppText>
+      ) : null}
+    </>
+  );
+}
+
+/** 평문 글 — 입력창 하나(태그는 글자 그대로). */
+function PlainContentInput({ state, busy }: { state: ComposeFormState; busy: boolean }) {
   const { colors } = useTheme();
   const { form, errors, patch } = state;
   return (
@@ -297,7 +362,6 @@ function ContentInput({ state, editor, busy }: { state: ComposeFormState; editor
       <TextInput
         value={form.content}
         onChangeText={(content) => patch({ content })}
-        onSelectionChange={(event) => editor.onSelectionChange(event.nativeEvent.selection)}
         placeholder={t('board.content_placeholder')}
         placeholderTextColor={colors.onSurfaceCaption}
         multiline
@@ -312,11 +376,6 @@ function ContentInput({ state, editor, busy }: { state: ComposeFormState; editor
         ]}
         testID="compose-content"
       />
-      {errors.wr_content ? (
-        <AppText variant="caption" tone="error" testID="compose-content-error">
-          {errorText(errors.wr_content)}
-        </AppText>
-      ) : null}
     </>
   );
 }

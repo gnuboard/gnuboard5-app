@@ -35,6 +35,29 @@ function decodeHtmlAttr(value: string): string {
 }
 
 /** 사용자가 입력한 링크 — 스킴 없으면 https, http(s)/mailto/tel 만, 제어문자·CRLF 인젝션·길이 초과 거부. */
+/**
+ * WYSIWYG 편집기(Tiptap)가 다루지 못해 수정·저장하면 사라지는 것 — 예전 그누보드 편집기(스마트에디터 등)로 쓴 글의
+ * 표·동영상(iframe)·글자 색/크기·배경·정렬. 이런 글을 고치기 전에 알린다.
+ */
+const UNSUPPORTED_EDITOR_PATTERNS = [
+  /<(table|iframe|video|audio|embed|object|font|center|svg|map|form)\b/i,
+  /\sstyle\s*=\s*["'][^"']*\b(color|font-size|font-family|background|text-align)\s*:/i,
+  /\salign\s*=\s*["']?(center|right|justify)/i,
+];
+
+export function hasUnsupportedEditorContent(html: string): boolean {
+  return UNSUPPORTED_EDITOR_PATTERNS.some((pattern) => pattern.test(html));
+}
+
+/** 평문 글을 HTML 글로 바꿀 때 — 줄마다 문단, 글자는 이스케이프(태그처럼 보이는 글자가 서식이 되지 않게). */
+export function plainTextToHtml(text: string): string {
+  if (!text.trim()) return '';
+  return text
+    .split(/\r?\n/)
+    .map((line) => `<p>${escapeHtmlText(line)}</p>`)
+    .join('');
+}
+
 export function normalizeLinkUrl(rawUrl: string): string | null {
   const trimmed = rawUrl.trim();
   if (!trimmed || trimmed.length > INPUT_LIMITS.url || CONTROL_CHARS.test(trimmed)) return null;

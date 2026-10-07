@@ -185,6 +185,16 @@ describe('identification headers (T-P0-07)', () => {
     resetBackoffForTests();
   });
 
+  test('bodyless writes send an empty JSON body (the host 502s POSTs without Content-Length); GET sends none', async () => {
+    mockedFetch.mockResolvedValue(okData({}));
+    await api.post('/notifications/read-all');
+    await api.delete('/notifications');
+    await api.get('/settings');
+    await api.post('/memos', { me_memo: 'hi' });
+    const bodies = mockedFetch.mock.calls.map((call) => call[1]!.body);
+    expect(bodies).toEqual(['{}', '{}', undefined, '{"me_memo":"hi"}']);
+  });
+
   test('every request carries X-Client-Platform and X-App-Version', async () => {
     mockedFetch.mockResolvedValueOnce(okData({}));
     await api.get('/settings');

@@ -35,4 +35,12 @@ export const designEn: Record<string, string> = {
   'profile.photo_failed': "Couldn't update your profile photo",
   'profile.photo_too_large': "Couldn't shrink the photo below {kb}KB. Please choose another photo.",
   'notification.admin_order_open': 'Open admin order',
+  'board.editor_unsupported_title': 'Some formatting may be lost',
+  'board.editor_unsupported_msg':
+    "This post has formatting the app editor can't handle (tables, videos, text colors, alignment…). Saving it from the app may remove that formatting.",
+  'board.editor_unsupported_continue': 'Edit anyway',
+  'board.html_off_title': 'Turn off HTML?',
+  'board.html_off_msg': 'Text styles and photos in the body will be removed, leaving plain text.',
+  'board.html_off_confirm': 'Turn off',
+  'board.content_length_over': 'The body is too long ({count}/{max}). Shorten it to save.',
 };

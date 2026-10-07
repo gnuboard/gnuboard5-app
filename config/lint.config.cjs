@@ -98,6 +98,8 @@ module.exports = defineConfig([
     'dist-web/**',
     'docs/**',
     'design/**',
+    // 편집기 묶음(scripts/build-rich-editor.mjs 가 만든다) — 사람이 고치지 않는 한 줄짜리.
+    '**/*.generated.ts',
   ]),
   ...expoConfig,
   prettierConfig,
