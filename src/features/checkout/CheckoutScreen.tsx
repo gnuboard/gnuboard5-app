@@ -12,7 +12,7 @@ import { useAddressesQuery } from '../../entities/address/api';
 import { checkOrderStock, getCart, isCartChanged } from '../../entities/cart/api';
 import { cartKeys } from '../../entities/cart/queries';
 import { useMyCouponsQuery, useSendCostCouponsQuery } from '../../entities/coupon/queries';
-import { createOrder, isBankAccountRejected } from '../../entities/payment/api';
+import { createOrder, isBankAccountRejected, isHopeDateRejected } from '../../entities/payment/api';
 import { putCheckoutHandoff, type PgCheckoutHandoff } from '../../entities/payment/checkoutHandoff';
 import { paymentConfigKeys, usePaymentConfigQuery } from '../../entities/payment/config';
 import { usePointSummaryQuery } from '../../entities/point/api';
@@ -36,12 +36,14 @@ import {
   AddressFields,
   AgreementBlock,
   DiscountBlock,
+  HopeDateFields,
   PaymentBlock,
   RecipientBlock,
   SummaryBlock,
   type AddressProps,
 } from './CheckoutSections';
 import { CheckoutCard, OrderItems } from './CheckoutCard';
+import { hopeDateProblem, type HopeDateConfig } from './hopeDate';
 import { availableMethods, isWebViewPg, type CheckoutMethod } from './methods';
 import { validateOrderForm, type OrderFormValues } from './orderForm.schema';
 import { buildCheckoutIntent, shownOrderCtIds } from './payload';
@@ -109,6 +111,8 @@ interface SubmitContext {
   pg: PgContext;
   /** 주문서가 보여 준 카트 줄(shownOrderCtIds) — 재고 확인 · 주문 · 결제 준비가 이 줄만 쓴다. */
   shownCtIds: string[] | undefined;
+  /** 희망배송일 설정(결제 설정의 hope_date) — 켜져 있으면 필수 · 고를 수 있는 날만. */
+  hopeDate: HopeDateConfig | null;
 }
 
 async function placeBankOrder(ctx: SubmitContext, values: OrderFormValues, method: CheckoutMethod, qc: QueryClient) {
@@ -157,6 +161,8 @@ function useSubmitOrder(ctx: SubmitContext, offered: readonly CheckoutMethod[]) 
     if (!offered.some((method) => method.value === result.method.value)) {
       return showToast(t('checkout.err_method'), 'error');
     }
+    const hopeProblem = hopeDateProblem(result.values.hopeDate, ctx.hopeDate);
+    if (hopeProblem) return showToast(t(`checkout.err_hope_date_${hopeProblem}`), 'error');
     const viaWebView = result.method.kind !== 'bank' && ctx.pg.webview;
     const viaToss = result.method.kind !== 'bank' && !viaWebView && ctx.pg.tossClientKey !== null;
     if (result.method.kind !== 'bank' && !viaWebView && !viaToss) return showToast(t('checkout.toss_soon'), 'info');
@@ -172,8 +178,11 @@ function useSubmitOrder(ctx: SubmitContext, offered: readonly CheckoutMethod[]) 
         void qc.invalidateQueries({ queryKey: cartKeys.root });
         return;
       }
-      // 관리자가 그사이 입금 계좌를 바꿨다 — 계좌 목록을 다시 받는다(고른 계좌가 없어졌으면 pickBankAccount 가 첫 계좌로).
-      if (isBankAccountRejected(error)) void qc.invalidateQueries({ queryKey: paymentConfigKeys.root });
+      // 관리자가 그사이 입금 계좌를 바꿨거나(고른 계좌가 없어졌으면 pickBankAccount 가 첫 계좌로) 날짜가 넘어가
+      // 희망배송일 범위가 바뀌었다 — 결제 설정을 다시 받는다.
+      if (isBankAccountRejected(error) || isHopeDateRejected(error)) {
+        void qc.invalidateQueries({ queryKey: paymentConfigKeys.root });
+      }
       showToast(errorMessage(error, t('checkout.order_failed')), 'error');
     } finally {
       setBusy(false);
@@ -284,6 +293,11 @@ function AddressSection({ model, data, isMember }: { model: Model; data: Data; i
           maxLength={255}
           testID="checkout-memo"
         />
+        <HopeDateFields
+          config={data.config.data?.hope_date}
+          value={values.hopeDate}
+          onChange={(hopeDate) => patch({ hopeDate })}
+        />
       </CheckoutCard>
     </>
   );
@@ -330,7 +344,7 @@ function CheckoutForm({ props, data, isMember }: { props: Props; data: Data; isM
   const { values, patch, preview } = model;
   const shownCtIds = shownOrderCtIds(props.route.params?.ctIds, data.cart.data?.items);
   const { submit, busy } = useSubmitOrder(
-    { props, clientUid: model.clientUid, isMember, pg, shownCtIds },
+    { props, clientUid: model.clientUid, isMember, pg, shownCtIds, hopeDate: data.config.data?.hope_date ?? null },
     model.methods,
   );
   const configPending = data.config.isPending;

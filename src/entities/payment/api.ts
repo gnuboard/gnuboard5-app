@@ -154,6 +154,11 @@ export function isBankAccountRejected(error: unknown): boolean {
   return error instanceof ApiError && error.status === 422 && !!error.fieldErrors?.od_bank_account;
 }
 
+/** 주문 · 결제 준비가 희망배송일 때문에 거절됐는가(400 `errors.code` HOPE_DATE) — 날짜가 넘어가 고를 수 있는 날이 바뀐 경우. */
+export function isHopeDateRejected(error: unknown): boolean {
+  return error instanceof ApiError && error.code === 'HOPE_DATE';
+}
+
 /** 무통장 주문 — 두 응답 형태(`{order:{od_id,uid}}` / `{od_id,uid}`)를 하나로. */
 export async function createOrder(body: object): Promise<CreatedOrder> {
   const data = await request('/shop/orders', { method: 'POST', body, schema: createdOrderSchema });

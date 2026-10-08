@@ -51,7 +51,6 @@ function form(extra: Partial<OrderFormValues> = {}): OrderFormValues {
     email: 'a@b.test',
     memo: '',
     hopeDate: '',
-    cashRequest: false,
     method: 'card',
     bankAccount: '',
     depositName: '',
@@ -305,7 +304,6 @@ describe('checkout intent', () => {
         saveAddress: true,
         recipient: { ...ORDERER, name: '김철수' },
         hopeDate: '2026-10-01',
-        cashRequest: true,
       }),
       findMethod('card')!,
       { isMember: true, clientUid: 'uid-3' },
@@ -317,9 +315,10 @@ describe('checkout intent', () => {
       save_address: 1,
       ad_subject: '김철수',
       od_hope_date: '2026-10-01',
-      od_cash_request: 1,
     });
     expect(intent.body).not.toHaveProperty('od_pwd');
+    // 현금영수증 신청은 서버가 무시한다(원본 od_cash = 1 은 "발급됨") — 보내지 않는다.
+    expect(intent.body).not.toHaveProperty('od_cash_request');
   });
 
   test('types forbid PG settle cases on /shop/orders and app_scheme on prepare', () => {

@@ -32,7 +32,6 @@ interface CommonOrderBody {
   od_memo: string;
   client_uid: string;
   od_hope_date?: string;
-  od_cash_request?: 1;
   od_pwd?: string;
   cp_id?: string;
   cp_id_send?: string;
@@ -127,8 +126,9 @@ function commonBody(values: OrderFormValues, options: IntentOptions): CommonOrde
     client_uid: options.clientUid,
     ...(options.isMember ? memberFields(values, recipient.name) : {}),
   };
+  // 희망배송일은 관리자가 켰을 때만 고르게 한다(꺼지면 서버도 버린다). 현금영수증 신청은 보내지 않는다 — 서버가 무시하고,
+  // 발급은 주문 뒤 현금영수증 화면에서 한다(원본 od_cash = 1 은 "발급됨").
   if (values.hopeDate) body.od_hope_date = values.hopeDate;
-  if (values.cashRequest) body.od_cash_request = 1;
   if (!options.isMember) body.od_pwd = values.guestPassword.trim();
   if (options.ctIds?.length) body.ct_ids = options.ctIds.join(',');
   if (options.direct) body.direct = 1;

@@ -10,6 +10,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, BackHandler, StyleSheet, View } from 'react-native';
 import { cartKeys } from '../../entities/cart/queries';
+import { paymentConfigKeys } from '../../entities/payment/config';
 import {
   dropCheckoutHandoff,
   peekCheckoutHandoff,
@@ -53,6 +54,10 @@ function useOutcome(navigation: Props['navigation']) {
       showToast(t('checkout.cart_changed'), 'error');
       navigation.goBack();
     } else {
+      // 날짜가 넘어가 희망배송일 범위가 바뀌었다 — 주문서가 고를 수 있는 날을 다시 받게 한다(안내는 서버 메시지).
+      if (outcome.kind === 'failed' && outcome.code === 'HOPE_DATE') {
+        void qc.invalidateQueries({ queryKey: paymentConfigKeys.root });
+      }
       const message = outcome.kind === 'failed' ? outcome.message || t('pg.failed') : t('pg.cancelled');
       showToast(message, outcome.kind === 'failed' ? 'error' : 'info');
       navigation.goBack();

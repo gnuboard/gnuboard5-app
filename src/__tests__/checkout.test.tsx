@@ -278,6 +278,87 @@ describe('CheckoutScreen', () => {
     expect(sent).toEqual([ACCOUNT, NEW_ACCOUNT]);
   });
 
+  test('hope date: shown and required only when the shop turns it on, and sent with the order', async () => {
+    let body: Record<string, unknown> | null = null;
+    baseHandlers();
+    server.use(
+      http.get('*/api/v1/shop/payment/config', () =>
+        envelope({ ...CONFIG, hope_date: { use: true, after: 3, min: '2026-10-30', max: '2026-11-02' } }),
+      ),
+      http.get('*/api/v1/shop/cart/order-stock', () => envelope({ ok: true })),
+      http.post('*/api/v1/shop/orders', async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return envelope({ order: { od_id: OD_ID, uid: UID } });
+      }),
+    );
+    mockAuth.member = { mb_id: 'm1' };
+    await render(wrap(checkout(), newClient()));
+    await fillOrderer();
+    expect(await screen.findByTestId('hope-date-0')).toBeTruthy();
+
+    await fireEvent.press(screen.getByTestId('checkout-submit'));
+    await waitFor(() => expect(mockToast).toHaveBeenCalledWith(t('checkout.err_hope_date_required'), 'error'));
+    expect(body).toBeNull();
+
+    await fireEvent.press(screen.getByTestId('hope-date-1'));
+    await fireEvent.press(screen.getByTestId('checkout-submit'));
+    await waitFor(() => expect(navigation.replace).toHaveBeenCalledWith('OrderComplete', { odId: OD_ID, uid: UID }));
+    expect(body).toMatchObject({ od_hope_date: '2026-10-31' });
+  });
+
+  test('a hope date the server no longer offers reloads the dates (the day rolled over)', async () => {
+    let range = { use: true, after: 3, min: '2026-10-30', max: '2026-11-02' };
+    baseHandlers();
+    server.use(
+      http.get('*/api/v1/shop/payment/config', () => envelope({ ...CONFIG, hope_date: range })),
+      http.get('*/api/v1/shop/cart/order-stock', () => envelope({ ok: true })),
+      http.post('*/api/v1/shop/orders', () =>
+        HttpResponse.json(
+          {
+            success: false,
+            message: '희망배송일은 2026-10-31 부터 2026-11-03 사이에서 선택해 주십시오.',
+            errors: { code: 'HOPE_DATE' },
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+    mockAuth.member = { mb_id: 'm1' };
+    await render(wrap(checkout(), newClient()));
+    await fillOrderer();
+    await fireEvent.press(await screen.findByTestId('hope-date-0'));
+    range = { ...range, min: '2026-10-31', max: '2026-11-03' }; // 자정이 지났다
+
+    await fireEvent.press(screen.getByTestId('checkout-submit'));
+    await waitFor(() =>
+      expect(mockToast).toHaveBeenCalledWith(
+        '희망배송일은 2026-10-31 부터 2026-11-03 사이에서 선택해 주십시오.',
+        'error',
+      ),
+    );
+    expect(await screen.findByText('11월 3일 (화)')).toBeTruthy();
+  });
+
+  test('hope date is hidden and not sent when the shop has it off', async () => {
+    let body: Record<string, unknown> | null = null;
+    baseHandlers();
+    server.use(
+      http.get('*/api/v1/shop/cart/order-stock', () => envelope({ ok: true })),
+      http.post('*/api/v1/shop/orders', async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return envelope({ order: { od_id: OD_ID, uid: UID } });
+      }),
+    );
+    mockAuth.member = { mb_id: 'm1' };
+    await render(wrap(checkout(), newClient()));
+    await fillOrderer();
+    expect(screen.queryByTestId('hope-date-0')).toBeNull();
+    await fireEvent.press(screen.getByTestId('checkout-submit'));
+    await waitFor(() => expect(navigation.replace).toHaveBeenCalled());
+    expect(body).not.toHaveProperty('od_hope_date');
+    expect(body).not.toHaveProperty('od_cash_request');
+  });
+
   test('find-zip opens the postcode screen for that field and applies the result', async () => {
     baseHandlers();
     const qc = newClient();

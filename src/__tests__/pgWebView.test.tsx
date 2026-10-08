@@ -21,6 +21,7 @@ import {
   startCheckoutHandoff,
   dropCheckoutHandoff,
 } from '../entities/payment/checkoutHandoff';
+import { paymentConfigKeys } from '../entities/payment/config';
 import { PaymentRunScreen } from '../features/payment/PaymentRunScreen';
 import { PgWebViewScreen } from '../features/payment/PgWebViewScreen';
 import { runPgPayment } from '../features/payment/runPgPayment';
@@ -311,10 +312,10 @@ describe('runPgPayment', () => {
 
 describe('PaymentRunScreen', () => {
   const navigation = { goBack: jest.fn(), replace: jest.fn() };
-  const renderRun = (handoffId: string) =>
+  const renderRun = (handoffId: string, client = new QueryClient()) =>
     render(
       <SafeAreaProvider initialMetrics={METRICS}>
-        <QueryClientProvider client={new QueryClient()}>
+        <QueryClientProvider client={client}>
           <ThemeProvider initialPreference="light">
             <PaymentRunScreen
               navigation={navigation as never}
@@ -380,6 +381,30 @@ describe('PaymentRunScreen', () => {
     await renderRun(id);
     await waitFor(() => expect(navigation.goBack).toHaveBeenCalled());
     expect(mockToast).toHaveBeenCalledWith(t('checkout.cart_changed'), 'error');
+    expect(mockNavigate).not.toHaveBeenCalledWith('PgWebView', expect.anything());
+  });
+
+  test('a stale preferred delivery date stops before the pg, reloads the payment settings and goes back', async () => {
+    const message = '희망배송일은 2026-10-31 부터 2026-11-07 사이에서 선택해 주십시오.';
+    server.use(
+      http.post('*/api/v1/shop/payment/prepare', () =>
+        HttpResponse.json({ success: false, message, errors: { code: 'HOPE_DATE' } }, { status: 400 }),
+      ),
+    );
+    mockToast.mockReset();
+    const client = new QueryClient();
+    client.setQueryData(paymentConfigKeys.root, { pg_service: 'inicis' });
+    const id = putCheckoutHandoff({
+      body: { payment_device: 'mobile', od_hope_date: '2026-10-30' },
+      method: 'card',
+      settleCase: '신용카드',
+      testMode: false,
+      shopName: '상점',
+    });
+    await renderRun(id, client);
+    await waitFor(() => expect(navigation.goBack).toHaveBeenCalled());
+    expect(mockToast).toHaveBeenCalledWith(message, 'error');
+    expect(client.getQueryState(paymentConfigKeys.root)?.isInvalidated).toBe(true);
     expect(mockNavigate).not.toHaveBeenCalledWith('PgWebView', expect.anything());
   });
 

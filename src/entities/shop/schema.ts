@@ -218,6 +218,10 @@ export const shopPaymentConfigSchema = z.looseObject({
   easy_pay_services: z.array(stringValue).default([]),
   bank_accounts: z.array(stringValue).default([]),
   is_test_mode: booleanValue,
+  /** 희망배송일 — 관리자 "희망배송일사용"일 때 use. min~max 는 서버 날짜 기준(서버 0e18ae8c3 부터, 없으면 칸을 그리지 않는다). */
+  hope_date: z
+    .looseObject({ use: booleanValue, min: stringValue.default(''), max: stringValue.default('') })
+    .optional(),
 });
 export type ShopPaymentConfig = z.infer<typeof shopPaymentConfigSchema>;
 

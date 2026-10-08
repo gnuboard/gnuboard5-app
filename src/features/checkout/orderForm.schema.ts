@@ -45,7 +45,6 @@ export const orderFormSchema = z.object({
   email: text(100),
   memo: text(255),
   hopeDate: z.union([z.literal(''), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]),
-  cashRequest: z.boolean(),
   method: z.string(),
   bankAccount: text(255),
   depositName: text(20),

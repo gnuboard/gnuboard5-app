@@ -16,6 +16,7 @@ import { Chip } from '../../shared/ui/Chip';
 import { Field } from '../../shared/ui/Field';
 import { AgreeRow } from '../../shared/ui/form/FormParts';
 import { SPACE } from '../../shared/ui/tokens/primitive';
+import { formatHopeDate, hopeDateOptions, type HopeDateConfig } from './hopeDate';
 import type { CheckoutMethod } from './methods';
 import type { OrderAddress, OrderFormValues } from './orderForm.schema';
 import type { OrderPreview } from './pricing';
@@ -34,6 +35,37 @@ function ChipRow({ children, testID }: { children: React.ReactNode; testID?: str
     >
       {children}
     </ScrollView>
+  );
+}
+
+interface HopeDateProps {
+  config: HopeDateConfig | null | undefined;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+/** 희망배송일 — 관리자가 켰을 때만. 고를 수 있는 날만 칩으로 보여 범위 밖 날은 고를 수 없다(필수). */
+export function HopeDateFields({ config, value, onChange }: HopeDateProps) {
+  const options = hopeDateOptions(config);
+  if (!config?.use) return null;
+  return (
+    <View style={styles.chips}>
+      <AppText variant="label">{t('checkout.hope_date')}</AppText>
+      <ChipRow testID="hope-date-row">
+        {options.map((ymd, index) => (
+          <Chip
+            key={ymd}
+            label={formatHopeDate(ymd)}
+            selected={value === ymd}
+            onPress={() => onChange(ymd)}
+            testID={`hope-date-${index}`}
+          />
+        ))}
+      </ChipRow>
+      <AppText variant="caption" tone="onSurfaceCaption">
+        {t('checkout.hope_date_hint')}
+      </AppText>
+    </View>
   );
 }
 

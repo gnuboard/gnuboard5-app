@@ -34,7 +34,6 @@ export function initialCheckoutValues(email = ''): OrderFormValues {
     email,
     memo: '',
     hopeDate: '',
-    cashRequest: false,
     method: '',
     bankAccount: '',
     depositName: '',
